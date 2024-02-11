@@ -197,6 +197,11 @@ def format_date(date_str):
 
 def process_gedcom_line(file, line, individuals, families, current_individual, current_family):
     components = line.split()
+
+    if len(components) < 2:
+        print(f"Error: Invalid line - {line.strip()}. It does not have enough items.")
+        exit()
+
     level = int(components[0])
     tag = components[1]
     arguments = ' '.join(components[2:])
