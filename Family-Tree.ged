@@ -1,5 +1,5 @@
 0 HEAD
-0 NOTE GedcomProject
+0 NOTE github url: https://github.com/Komal147/GedcomProject
 1 SOUR Family Echo
 2 WWW https://www.familyecho.com/
 1 FILE Family 4
@@ -488,6 +488,9 @@
 0 @F13@ FAM
 1 HUSB @I23@
 1 WIFE @I24@
+1 MARR
+2 DATE 19 AUG 1990
+2 PLAC Tamil Nadu, India
 1 _CURRENT Y
 1 _PRIMARY Y
 0 @F14@ FAM
