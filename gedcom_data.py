@@ -290,7 +290,6 @@ def process_gedcom_line(file, line, individuals, families, current_individual, c
         current_family.wife_name = individuals.get(components[2], None).name
 
     elif tag == 'CHIL' and is_valid_tag(tag, level):
-        #print(individuals.get(components[2], None))
         current_family.children.append(individuals.get(components[2], None))
         current_family.childrenIds.append(components[2])
 
@@ -347,7 +346,7 @@ def parse_gedcom(file_path):
 
 if __name__ == '__main__':
     # Check if the user provided a command line argument for the GEDCOM file path
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print("Error: Please provide the GEDCOM file path as a command line argument.")
         sys.exit(1)
 
