@@ -197,9 +197,16 @@ class Family:
                 if(birthday2 != birthday):
                     if(name == name2):
                         return "NO"
-
-
         return "YES"
+    
+    def children_before_marriage(self):
+        if self.marriage_date is not None:
+            marriage_date_obj = datetime.strptime(self.marriage_date, '%Y-%m-%d')
+            for child in self._children:
+                child_birth_date_obj = datetime.strptime(child.birth_date, '%Y-%m-%d')
+                if child_birth_date_obj < marriage_date_obj:
+                    return "YES"
+        return "NO"
 
 
 def is_valid_tag(tag, level):
@@ -362,12 +369,12 @@ if __name__ == '__main__':
     print(indi_table)
 
     fam_table = PrettyTable(
-        ["Family ID", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children", "Marriage Date", "Divorce Date", "Unique Family Name"])
+        ["Family ID", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children", "Marriage Date", "Divorce Date", "Unique Names", "Pre Marriage Child"])
     for fam_id, fam_data in sorted_families.items():
         children_str = ", ".join(fam_data.childrenIds) if fam_data.childrenIds else 'NA'
         fam_table.add_row(
             [fam_id, fam_data.husband_id, fam_data.husband_name, fam_data.wife_id, fam_data.wife_name, children_str,
-             fam_data.marriage_date, fam_data.divorce_date, fam_data.unique_family_names()])
+             fam_data.marriage_date, fam_data.divorce_date, fam_data.unique_family_names(), fam_data.children_before_marriage()])
 
     print("\nFamilies:")
     print(fam_table)
