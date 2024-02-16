@@ -98,9 +98,9 @@ class Individual:
         return None
 
     def is_birth_before_death(self):
-        if self.birth_date is None:
+        if not self.birth_date or not self.birth_date.strip():
             return "Unknown Birthdate"
-        elif self.death_date is None:
+        elif not self.death_date or not self.death_date.strip():
             return "Unknown Death Date"
         else:
             birth_date_obj = datetime.strptime(self.birth_date, '%Y-%m-%d')
