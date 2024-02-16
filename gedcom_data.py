@@ -118,7 +118,7 @@ class Individual:
             "Child Of (FAMC)": self.child_of
         }
 
-        missing_fields = [field for field, value in required_fields.items() if value is None]
+        missing_fields = [field for field, value in required_fields.items() if not value]
         return missing_fields
 
 
