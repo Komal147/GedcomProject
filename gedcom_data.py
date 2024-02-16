@@ -349,10 +349,10 @@ if __name__ == '__main__':
         spouse_of_str = ", ".join(indi_data.spouse_of) if indi_data.spouse_of else 'NA'
         missing_required_fields = indi_data.find_missing_required_fields()
         missing_required_fields_str = ", ".join(missing_required_fields) if missing_required_fields else 'NA'
-        is_birth_before_death = indi_data.is_birth_before_death()
+        birth_before_death_str = indi_data.is_birth_before_death()
         indi_table.add_row(
             [indi_id, indi_data.name, indi_data.sex, indi_data.birth_date, indi_data.age, indi_data.death_date, indi_data.alive,
-             spouse_of_str, indi_data.child_of, is_birth_before_death, missing_required_fields_str])
+             spouse_of_str, indi_data.child_of, birth_before_death_str, missing_required_fields_str])
 
     print("Individuals:")
     print(indi_table)
