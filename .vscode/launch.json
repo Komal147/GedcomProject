@@ -11,7 +11,7 @@
             "program": "gedcom_data.py",
             "console": "integratedTerminal",
             "args": [
-                "Family-Tree.ged"
+                "Family-Tree.ged",
             ],
         }
     ]

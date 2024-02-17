@@ -346,7 +346,7 @@ def parse_gedcom(file_path):
 
 if __name__ == '__main__':
     # Check if the user provided a command line argument for the GEDCOM file path
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print("Error: Please provide the GEDCOM file path as a command line argument.")
         sys.exit(1)
 
