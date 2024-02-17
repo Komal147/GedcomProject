@@ -84,6 +84,7 @@ class Individual:
     def alive(self, value):
         self._alive = value
 
+
     def calculate_age(self):
         if self.birth_date is not None:
             birth_date_obj = datetime.strptime(self.birth_date, '%Y-%m-%d')
@@ -100,7 +101,7 @@ class Individual:
 
 class Family:
     def __init__(self, identifier, husband_id, husband_name=None, wife_id=None, wife_name=None, children=None,
-                 marriage_date=None, divorce_date=None):
+                 marriage_date=None, divorce_date=None, childrenIds=None):
         self._identifier = identifier
         self._husband_id = husband_id
         self._husband_name = husband_name
@@ -109,6 +110,9 @@ class Family:
         self._children = children
         self._marriage_date = marriage_date
         self._divorce_date = divorce_date
+        self._childrenIds = childrenIds
+
+        
 
     @property
     def identifier(self):
@@ -169,6 +173,40 @@ class Family:
     @divorce_date.setter
     def divorce_date(self, value):
         self._divorce_date = value
+
+    @property
+    def childrenIds(self):
+        return self._childrenIds
+    
+    @childrenIds.setter
+    def childrenIds(self, value):
+        self._childrenIds = value   
+
+
+
+    def unique_family_names(self):
+
+        for child in self._children:
+            name = child.name.split(" ")[0]
+            birthday = child.birth_date
+            if(name == self.husband_name.split(" ")[0] or name == self.wife_name.split(" ")[0]):
+                return "NO"
+            for child2 in self._children:
+                name2 = child2.name.split(" ")[0]
+                birthday2 = child2.birth_date
+                if(birthday2 != birthday):
+                    if(name == name2):
+                        return "NO"
+        return "YES"
+    
+    def children_before_marriage(self):
+        if self.marriage_date is not None:
+            marriage_date_obj = datetime.strptime(self.marriage_date, '%Y-%m-%d')
+            for child in self._children:
+                child_birth_date_obj = datetime.strptime(child.birth_date, '%Y-%m-%d')
+                if child_birth_date_obj < marriage_date_obj:
+                    return "YES"
+        return "NO"
 
 
 def is_valid_tag(tag, level):
@@ -240,7 +278,7 @@ def process_gedcom_line(file, line, individuals, families, current_individual, c
         current_individual.spouse_of.append(components[2])
 
     elif tag == 'FAM' and is_valid_tag(tag, level):
-        current_family = Family(components[1], None, None, None, None, [], None)
+        current_family = Family(components[1], None, None, None, None, [], None,None, [])
         families[current_family.identifier] = current_family
 
     elif tag == 'HUSB' and is_valid_tag(tag, level):
@@ -252,7 +290,8 @@ def process_gedcom_line(file, line, individuals, families, current_individual, c
         current_family.wife_name = individuals.get(components[2], None).name
 
     elif tag == 'CHIL' and is_valid_tag(tag, level):
-        current_family.children.append(components[2])
+        current_family.children.append(individuals.get(components[2], None))
+        current_family.childrenIds.append(components[2])
 
     elif tag == 'MARR' and is_valid_tag(tag, level):
         marriage_date = ' '.join(file.readline().strip().split()[2:])
@@ -329,12 +368,12 @@ if __name__ == '__main__':
     print(indi_table)
 
     fam_table = PrettyTable(
-        ["Family ID", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children", "Marriage Date", "Divorce Date"])
+        ["Family ID", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children", "Marriage Date", "Divorce Date", "Unique Names", "Pre Marriage Child"])
     for fam_id, fam_data in sorted_families.items():
-        children_str = ", ".join(fam_data.children) if fam_data.children else 'NA'
+        children_str = ", ".join(fam_data.childrenIds) if fam_data.childrenIds else 'NA'
         fam_table.add_row(
             [fam_id, fam_data.husband_id, fam_data.husband_name, fam_data.wife_id, fam_data.wife_name, children_str,
-             fam_data.marriage_date, fam_data.divorce_date])
+             fam_data.marriage_date, fam_data.divorce_date, fam_data.unique_family_names(), fam_data.children_before_marriage()])
 
     print("\nFamilies:")
     print(fam_table)
