@@ -38,7 +38,7 @@
 2 _MARNM Krishnan
 1 SEX M
 1 BIRT
-2 DATE 3 MAY 1943
+2 DATE 3 MAY 2060
 1 FAMS @F2@
 1 FAMC @F3@
 0 @I4@ INDI
@@ -60,7 +60,7 @@
 1 BIRT
 2 DATE 3 OCT 1915
 1 DEAT Y
-2 DATE 4 MAY 2010
+2 DATE 4 MAY 2030
 1 FAMS @F4@
 0 @I6@ INDI
 1 NAME Sandhya /Krishnamurthy/
@@ -336,8 +336,8 @@
 2 DATE 4 MAY 1860
 1 DEAT Y
 2 DATE 4 MAR 1925
-1 FAMS @F14@
-0 @I33@ INDI
+1 FAMS @F16@
+0 @I32@ INDI
 1 NAME Chandra /Vijayaraghavan/
 2 GIVN Chandra
 2 SURN Vijayaraghavan
@@ -359,7 +359,7 @@
 1 DEAT Y
 2 DATE 5 APR 1930
 1 FAMS @F15@
-0 @I35@ INDI
+0 @I34@ INDI
 1 NAME Sushmitha /Venkateshan/
 2 GIVN Sushmitha
 2 SURN Venkateshan
@@ -428,7 +428,7 @@
 2 DATE 20 SEP 2010
 1 _CURRENT N
 1 _PRIMARY N
-0 @F7@ FAM
+0 @F5@ FAM
 1 HUSB @I10@
 1 WIFE @I9@
 1 CHIL @I11@
