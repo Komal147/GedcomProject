@@ -290,7 +290,6 @@ def process_gedcom_line(file, line, individuals, families, current_individual, c
         current_family.wife_name = individuals.get(components[2], None).name
 
     elif tag == 'CHIL' and is_valid_tag(tag, level):
-        #print(individuals.get(components[2], None))
         current_family.children.append(individuals.get(components[2], None))
         current_family.childrenIds.append(components[2])
 
