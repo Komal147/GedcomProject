@@ -98,6 +98,30 @@ class Individual:
             return age
         return None
 
+    def is_birth_before_death(self):
+        if not self.birth_date or not self.birth_date.strip():
+            return "Unknown Birthdate"
+        elif not self.death_date or not self.death_date.strip():
+            return "Unknown Death Date"
+        else:
+            birth_date_obj = datetime.strptime(self.birth_date, '%Y-%m-%d')
+            death_date_obj = datetime.strptime(self.death_date, '%Y-%m-%d')
+            if birth_date_obj < death_date_obj:
+                return "Yes"
+            else:
+                return "No"
+
+    def find_missing_required_fields(self):
+        required_fields = {
+            "Name": self.name,
+            "Sex": self.sex,
+            "Birth Date": self.birth_date,
+            "Child Of (FAMC)": self.child_of
+        }
+
+        missing_fields = [field for field, value in required_fields.items() if not value]
+        return missing_fields
+
 
 class Family:
     def __init__(self, identifier, husband_id, husband_name=None, wife_id=None, wife_name=None, children=None,
@@ -357,12 +381,17 @@ if __name__ == '__main__':
     sorted_individuals = dict(sorted(individuals_data.items(), key=lambda x: extract_numeric_part(x[0])))
     sorted_families = dict(sorted(families_data.items(), key=lambda x: extract_numeric_part(x[0])))
 
-    indi_table = PrettyTable(["Individual ID", "Name", "Sex", "Birth Date", "Age", "Death Date", "Alive", "Spouse Of", "Child Of"])
+    indi_table = PrettyTable(["Individual ID", "Name", "Sex", "Birth Date", "Age", "Death Date", "Alive", "Spouse Of", "Child Of",
+                              "Birth Before Death", "Missing Required Fields (Required fields are Name, "
+                                                    "Sex, Birth Date, and Child Of"])
     for indi_id, indi_data in sorted_individuals.items():
         spouse_of_str = ", ".join(indi_data.spouse_of) if indi_data.spouse_of else 'NA'
+        missing_required_fields = indi_data.find_missing_required_fields()
+        missing_required_fields_str = ", ".join(missing_required_fields) if missing_required_fields else 'NA'
+        birth_before_death_str = indi_data.is_birth_before_death()
         indi_table.add_row(
             [indi_id, indi_data.name, indi_data.sex, indi_data.birth_date, indi_data.age, indi_data.death_date, indi_data.alive,
-             spouse_of_str, indi_data.child_of])
+             spouse_of_str, indi_data.child_of, birth_before_death_str, missing_required_fields_str])
 
     print("Individuals:")
     print(indi_table)
