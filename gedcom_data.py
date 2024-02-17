@@ -103,7 +103,7 @@ class Individual:
             birth_date_obj = datetime.strptime(self.birth_date, '%Y-%m-%d')
             death_date_obj = datetime.strptime(self.death_date, '%Y-%m-%d')
             if birth_date_obj >= death_date_obj:
-                return f"ERROR: INDIVIDUAL: US03: {self.identifier}: BIRTHDATE {self.birth_date} IS AFTER DEATH DATE {self.death_date}"
+                return f"ERROR: INDIVIDUAL: US03: {self.identifier}: Birthdate {self.birth_date} is after death date {self.death_date}"
 
     def find_missing_required_fields(self):
         required_fields = {
@@ -116,7 +116,7 @@ class Individual:
         missing_fields = [field for field, value in required_fields.items() if not value]
 
         if missing_fields:
-            return f"ERROR: INDIVIDUAL US23: {self.identifier}: MISSING REQUIRED FIELDS {', '.join(missing_fields)}"
+            return f"ERROR: INDIVIDUAL: US23: {self.identifier}: Missing required fields {', '.join(missing_fields)}"
 
 
 class Family:
@@ -213,7 +213,7 @@ def print_missing_required_fields_for_all_individuals(individuals):
             print(missing_required_fields_str)
 
     if not has_missing_required_fields:
-        print("NO INDIVIDUAL IS MISSING REQUIRED FIELDS")
+        print("No individual is missing required fields.")
 
 
 def print_birth_before_death_errors_for_all_individuals(individuals):
@@ -225,7 +225,7 @@ def print_birth_before_death_errors_for_all_individuals(individuals):
             print(birth_before_death_error_str)
 
     if not has_birth_before_death_errors:
-        print("NO INDIVIDUAL HAS BIRTH BEFORE DEATH ERRORS")
+        print("No individual has birth before death errors.")
 
 
 def extract_numeric_part(identifier):
