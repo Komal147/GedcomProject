@@ -1,10 +1,11 @@
 from prettytable import PrettyTable
-from datetime import datetime,date
+from datetime import datetime, date
 import sys
 
 
 class Individual:
-    def __init__(self, identifier, name, sex, birth_date, death_date=None, child_of=None, spouse_of=None, age=None, is_duplicate= False,
+    def __init__(self, identifier, name, sex, birth_date, death_date=None, child_of=None, spouse_of=None, age=None,
+                 is_duplicate=False,
                  alive=True):
         self._identifier = identifier
         self._name = name
@@ -85,7 +86,6 @@ class Individual:
     def alive(self, value):
         self._alive = value
 
-
     def calculate_age(self):
         if self.birth_date is not None:
             birth_date_obj = datetime.strptime(self.birth_date, '%Y-%m-%d')
@@ -137,8 +137,6 @@ class Family:
         self._divorce_date = divorce_date
         self._is_duplicate = is_duplicate
         self._childrenIds = childrenIds
-
-        
 
     @property
     def identifier(self):
@@ -203,50 +201,56 @@ class Family:
     @property
     def childrenIds(self):
         return self._childrenIds
-    
+
     @childrenIds.setter
     def childrenIds(self, value):
-        self._childrenIds = value   
-
-
+        self._childrenIds = value
 
     def unique_family_names(self):
-
-#todo return the reason why
+        # todo return the reason why
         for child in self._children:
-            if(child.name == None): 
-                name = "Unknown"
-            else: 
+            print(f"Checking child: {child}")
+            if child and hasattr(child, 'name') and child.name:
                 name = child.name.split(" ")[0]
-            
-            if(self.husband_name == None):
-                husband_name = "Unknown"
             else:
-                husband_name = self.husband_name.split(" ")[0]
+                print(f"Skipping child: {child}")
+                continue  # Skip this iteration if child or child.name is None
 
-            if(self.wife_name == None):
-                wife_name = "Unknown"
+            if self.husband_name:
+                husband_name = self.husband_name.split(" ")[0]
             else:
+                husband_name = "Unknown"
+
+            if self.wife_name:
                 wife_name = self.wife_name.split(" ")[0]
+            else:
+                wife_name = "Unknown"
+
             birthday = child.birth_date
-            if(name == husband_name):
+            if name == husband_name:
                 return "ERROR: FAMILY: US25: " + self.identifier + ": Child " + name + " has the same name as father " + husband_name
-            elif  name == wife_name:
+            elif name == wife_name:
                 return "ERROR: FAMILY: US25: " + self.identifier + ": Child " + name + " has the same name as mother " + wife_name
             for child2 in self._children:
-                if(child2.name == None):
-                    name2 = "Unknown"
-                else:
-                    name2 = child2.name.split(" ")[0]
-                birthday2 = child2.birth_date
-                if(birthday2 != birthday):
-                    if(name == name2):
-                        "ERROR: FAMILY: US25: " + self.identifier + ": Child " + name + " has the same name as sibling " + name2
+                print(f"Checking child2: {child2}")
+                try:
+                    if child2 and hasattr(child2, 'name') and child2.name:
+                        name2 = child2.name.split(" ")[0]
+                    else:
+                        print(f"Skipping child2: {child2}")
+                        continue  # Skip this iteration if child2 or child2.name is None
+
+                    birthday2 = child2.birth_date
+
+                    if birthday2 != birthday and name == name2:
+                        return "ERROR: FAMILY: US25: " + self.identifier + ": Child " + name + " has the same name as sibling " + name2
+                except Exception as e2:
+                    print(f"Exception in inner loop: {e2}")
         return ""
-    
+
     def children_before_marriage(self):
-        #todo return the reason why
-        if self.marriage_date is not None :
+        # todo return the reason why
+        if self.marriage_date is not None:
             marriage_date_obj = datetime.strptime(self.marriage_date, '%Y-%m-%d')
             for child in self._children:
                 if child.birth_date is not None:
@@ -280,7 +284,8 @@ def format_date(date_str):
         return date_str
 
 
-def process_gedcom_line(file, line, individuals, families, current_individual, current_family, duplicate_individual, duplicate_family):
+def process_gedcom_line(file, line, individuals, families, current_individual, current_family, duplicate_individual,
+                        duplicate_family):
     components = line.split()
 
     if len(components) < 2:
@@ -335,16 +340,20 @@ def process_gedcom_line(file, line, individuals, families, current_individual, c
             families[fam_id].is_duplicate = True
             duplicate_family.append(fam_id)
         else:
-            current_family = Family(components[1], None, None, None, None, [], None)
+            current_family = Family(components[1], None, None, None, None, [], None, childrenIds=[])
             families[current_family.identifier] = current_family
 
     elif tag == 'HUSB' and is_valid_tag(tag, level):
         current_family.husband_id = components[2]
-        current_family.husband_name = individuals.get(components[2], None).name
+        husband = individuals.get(components[2], None)
+        if husband is not None:
+            current_family.husband_name = husband.name
 
     elif tag == 'WIFE' and is_valid_tag(tag, level):
         current_family.wife_id = components[2]
-        current_family.wife_name = individuals.get(components[2], None).name
+        wife = individuals.get(components[2], None)
+        if wife is not None:
+            current_family.wife_name = wife.name
 
     elif tag == 'CHIL' and is_valid_tag(tag, level):
         current_family.children.append(individuals.get(components[2], None))
@@ -359,27 +368,30 @@ def process_gedcom_line(file, line, individuals, families, current_individual, c
         current_family.divorce_date = format_date(divorce_date)
     return current_individual, current_family, duplicate_individual, duplicate_family
 
+
 def getCurrDate():
     curr_date = str(datetime.now().today())
     return curr_date
 
+
 def convertDateFormat(date):
     temp = date.split()
-    if(temp[1] == 'JAN'): temp[1] = '01';
-    if(temp[1] == 'FEB'): temp[1] = '02';
-    if(temp[1] == 'MAR'): temp[1] = '03';
-    if(temp[1] == 'APR'): temp[1] = '04';
-    if(temp[1] == 'MAY'): temp[1] = '05';
-    if(temp[1] == 'JUN'): temp[1] = '06';
-    if(temp[1] == 'JUL'): temp[1] = '07';
-    if(temp[1] == 'AUG'): temp[1] = '08';
-    if(temp[1] == 'SEP'): temp[1] = '09';
-    if(temp[1] == 'OCT'): temp[1] = '10';
-    if(temp[1] == 'NOV'): temp[1] = '11';
-    if(temp[1] == 'DEC'): temp[1] = '12';
-    if(temp[2] in ['1', '2', '3', '4', '5', '6', '7', '8', '9']):
+    if (temp[1] == 'JAN'): temp[1] = '01';
+    if (temp[1] == 'FEB'): temp[1] = '02';
+    if (temp[1] == 'MAR'): temp[1] = '03';
+    if (temp[1] == 'APR'): temp[1] = '04';
+    if (temp[1] == 'MAY'): temp[1] = '05';
+    if (temp[1] == 'JUN'): temp[1] = '06';
+    if (temp[1] == 'JUL'): temp[1] = '07';
+    if (temp[1] == 'AUG'): temp[1] = '08';
+    if (temp[1] == 'SEP'): temp[1] = '09';
+    if (temp[1] == 'OCT'): temp[1] = '10';
+    if (temp[1] == 'NOV'): temp[1] = '11';
+    if (temp[1] == 'DEC'): temp[1] = '12';
+    if (temp[2] in ['1', '2', '3', '4', '5', '6', '7', '8', '9']):
         temp[2] = '0' + temp[2]
     return (temp[0] + '-' + temp[1] + '-' + temp[2])
+
 
 def DatesBeforeCurrDate(individuals, families):
     curr_date = getCurrDate()
@@ -408,6 +420,7 @@ def DatesBeforeCurrDate(individuals, families):
         return 'Yes'
     else:
         return 'No'
+
 
 def parse_gedcom(file_path):
     individuals = {}
@@ -439,77 +452,85 @@ def parse_gedcom(file_path):
 
             for line in file:
                 current_individual, current_family, duplicate_individual, duplicate_family = process_gedcom_line(file,
-                                                                         line, individuals, families, current_individual,
-                                                                         current_family, duplicate_individual, duplicate_family
-                                                                         )
+                                                                                                                 line,
+                                                                                                                 individuals,
+                                                                                                                 families,
+                                                                                                                 current_individual,
+                                                                                                                 current_family,
+                                                                                                                 duplicate_individual,
+                                                                                                                 duplicate_family
+                                                                                                                 )
     except FileNotFoundError:
         print(f"Error: File not found - {file_path}")
     except Exception as e:
         print(f"Error: An unexpected error occurred - {e}")
     return individuals, families, duplicate_individual, duplicate_family
 
+
 if __name__ == '__main__':
     # Check if the user provided a command line argument for the GEDCOM file path
-    if len(sys.argv) < 2:
-        print("Error: Please provide the GEDCOM file path as a command line argument.")
-        sys.exit(1)
+    # if len(sys.argv) < 2:
+    #   print("Error: Please provide the GEDCOM file path as a command line argument.")
+    #  sys.exit(1)
 
-    gedcom_file_path = sys.argv[1]
+    # gedcom_file_path = sys.argv[1]
+
+    gedcom_file_path = 'Family-Tree.ged'
 
     individuals_data, families_data, duplicate_individual, duplicate_family = parse_gedcom(gedcom_file_path)
-
 
     sorted_individuals = dict(sorted(individuals_data.items(), key=lambda x: extract_numeric_part(x[0])))
     sorted_families = dict(sorted(families_data.items(), key=lambda x: extract_numeric_part(x[0])))
 
-    indi_table = PrettyTable(["Individual ID", "Name", "Sex", "Birth Date", "Age", "Death Date", "Alive", "Spouse Of", "Child Of",
-                              "Birth Before Death", "Missing Required Fields (Required fields are Name, "
-                                                    "Sex, Birth Date, and Child Of"])
+    indi_table = PrettyTable(
+        ["Individual ID", "Name", "Sex", "Birth Date", "Age", "Death Date", "Alive", "Spouse Of", "Child Of",
+         "Birth Before Death", "Missing Required Fields (Required fields are Name, "
+                               "Sex, Birth Date, and Child Of"])
     for indi_id, indi_data in sorted_individuals.items():
         spouse_of_str = ", ".join(indi_data.spouse_of) if indi_data.spouse_of else 'NA'
         missing_required_fields = indi_data.find_missing_required_fields()
         missing_required_fields_str = ", ".join(missing_required_fields) if missing_required_fields else 'NA'
         birth_before_death_str = indi_data.is_birth_before_death()
         indi_table.add_row(
-            [indi_id, indi_data.name, indi_data.sex, indi_data.birth_date, indi_data.age, indi_data.death_date, indi_data.alive,
+            [indi_id, indi_data.name, indi_data.sex, indi_data.birth_date, indi_data.age, indi_data.death_date,
+             indi_data.alive,
              spouse_of_str, indi_data.child_of, birth_before_death_str, missing_required_fields_str])
 
     print("Individuals:")
     print(indi_table)
 
-
     fam_errors = []
 
     fam_table = PrettyTable(
-        ["Family ID", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children", "Marriage Date", "Divorce Date"])
+        ["Family ID", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children", "Marriage Date",
+         "Divorce Date"])
     for fam_id, fam_data in sorted_families.items():
-        if( fam_data.unique_family_names() != ""):
+        if (fam_data.unique_family_names() != ""):
             fam_errors.append(fam_data.unique_family_names())
-        elif fam_data.children_before_marriage() != "": 
+        elif fam_data.children_before_marriage() != "":
             fam_errors.append(fam_data.children_before_marriage())
-        else : 
+        else:
             children_str = ", ".join(fam_data.childrenIds) if fam_data.childrenIds else 'NA'
             fam_table.add_row(
                 [fam_id, fam_data.husband_id, fam_data.husband_name, fam_data.wife_id, fam_data.wife_name, children_str,
-                fam_data.marriage_date, fam_data.divorce_date])
+                 fam_data.marriage_date, fam_data.divorce_date])
 
     print("\nFamilies:")
     print(fam_table)
 
-
-
     # Access and print information about duplicate individuals
     for duplicate_individual_id in duplicate_individual:
-        print(f"ERROR: INDIVIDUAL: US22: {extract_numeric_part(duplicate_individual_id)}: Duplicate Individual Id: {duplicate_individual_id}")
+        print(
+            f"ERROR: INDIVIDUAL: US22: {extract_numeric_part(duplicate_individual_id)}: Duplicate Individual Id: {duplicate_individual_id}")
 
     # Access and print information about duplicate Family
     for duplicate_family_id in duplicate_family:
-        print(f"ERROR: FAMILY: US22: {extract_numeric_part(duplicate_family_id)}: Duplicate Family Id: {duplicate_family_id}")
+        print(
+            f"ERROR: FAMILY: US22: {extract_numeric_part(duplicate_family_id)}: Duplicate Family Id: {duplicate_family_id}")
 
-    DatesBeforeCurrDate(sorted_individuals,sorted_families)
+    DatesBeforeCurrDate(sorted_individuals, sorted_families)
 
-    
     fam_errors.sort()
     print()
-    for err in fam_errors: 
+    for err in fam_errors:
         print(err)
