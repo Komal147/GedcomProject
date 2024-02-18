@@ -207,27 +207,31 @@ class Family:
 
     def unique_family_names(self):
 
+#todo return the reason why
         for child in self._children:
             name = child.name.split(" ")[0]
             birthday = child.birth_date
-            if(name == self.husband_name.split(" ")[0] or name == self.wife_name.split(" ")[0]):
-                return "NO"
+            if(name == self.husband_name.split(" ")[0]):
+                return "ERROR: FAMILY: US25: " + self.identifier + ": Child " + name + " has the same name as father " + self.husband_name.split(" ")[0]
+            elif  name == self.wife_name.split(" ")[0]:
+                return "ERROR: FAMILY: US25: " + self.identifier + ": Child " + name + " has the same name as mother " + self.wife_name.split(" ")[0]
             for child2 in self._children:
                 name2 = child2.name.split(" ")[0]
                 birthday2 = child2.birth_date
                 if(birthday2 != birthday):
                     if(name == name2):
-                        return "NO"
-        return "YES"
+                        "ERROR: FAMILY: US25: " + self.identifier + ": Child " + name + " has the same name as sibling " + name2
+        return ""
     
     def children_before_marriage(self):
+        #todo return the reason why
         if self.marriage_date is not None:
             marriage_date_obj = datetime.strptime(self.marriage_date, '%Y-%m-%d')
             for child in self._children:
                 child_birth_date_obj = datetime.strptime(child.birth_date, '%Y-%m-%d')
                 if child_birth_date_obj < marriage_date_obj:
-                    return "YES"
-        return "NO"
+                    return "ERROR: FAMILY: US02: " + self.identifier + ": Child " + child.identifier + " was born before marriage on " + self.marriage_date
+        return ""
 
 
 def is_valid_tag(tag, level):
@@ -423,13 +427,25 @@ if __name__ == '__main__':
     print('\nINDIVIDUALS WITH BIRTH BEFORE DEATH:\n')
     print_birth_before_death_errors_for_all_individuals(sorted_individuals)
 
+    fam_errors = []
+
     fam_table = PrettyTable(
-        ["Family ID", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children", "Marriage Date", "Divorce Date", "Unique Names", "Pre Marriage Child"])
+        ["Family ID", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children", "Marriage Date", "Divorce Date"])
     for fam_id, fam_data in sorted_families.items():
-        children_str = ", ".join(fam_data.childrenIds) if fam_data.childrenIds else 'NA'
-        fam_table.add_row(
-            [fam_id, fam_data.husband_id, fam_data.husband_name, fam_data.wife_id, fam_data.wife_name, children_str,
-             fam_data.marriage_date, fam_data.divorce_date, fam_data.unique_family_names(), fam_data.children_before_marriage()])
+        if( fam_data.unique_family_names() != ""):
+            fam_errors.append(fam_data.unique_family_names())
+        elif fam_data.children_before_marriage() != "": 
+            fam_errors.append(fam_data.children_before_marriage())
+        else : 
+            children_str = ", ".join(fam_data.childrenIds) if fam_data.childrenIds else 'NA'
+            fam_table.add_row(
+                [fam_id, fam_data.husband_id, fam_data.husband_name, fam_data.wife_id, fam_data.wife_name, children_str,
+                fam_data.marriage_date, fam_data.divorce_date])
 
     print("\nFamilies:")
     print(fam_table)
+
+    fam_errors.sort()
+    print()
+    for err in fam_errors: 
+        print(err)
