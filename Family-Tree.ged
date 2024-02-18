@@ -153,8 +153,8 @@
 1 FAMS @F9@
 1 FAMC @F8@
 0 @I15@ INDI
-1 NAME Trisha /Gopal/
-2 GIVN Trisha
+1 NAME Anand /Gopal/
+2 GIVN Anand
 2 SURN Gopal
 2 _MARNM Narayanan
 1 SEX F
@@ -213,7 +213,7 @@
 1 FAMS @F3@
 1 FAMC @F11@
 0 @I21@ INDI
-1 NAME Geetha /Krishnan/
+1 NAME Indira /Krishnan/
 2 GIVN Geetha
 2 SURN Krishnan
 2 _MARNM Krishnan
@@ -337,7 +337,7 @@
 1 DEAT Y
 2 DATE 4 MAR 1925
 1 FAMS @F16@
-0 @I32@ INDI
+0 @I33@ INDI
 1 NAME Chandra /Vijayaraghavan/
 2 GIVN Chandra
 2 SURN Vijayaraghavan
@@ -374,7 +374,7 @@
 1 HUSB @I1@
 1 WIFE @I2@
 1 MARR
-2 DATE 5 MAY 1999
+2 DATE 5 MAY 2099
 2 PLAC Tamil Nadu, India
 1 _CURRENT Y
 1 _PRIMARY Y

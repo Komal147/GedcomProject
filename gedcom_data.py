@@ -85,6 +85,7 @@ class Individual:
     def alive(self, value):
         self._alive = value
 
+
     def calculate_age(self):
         if self.birth_date is not None:
             birth_date_obj = datetime.strptime(self.birth_date, '%Y-%m-%d')
@@ -98,10 +99,34 @@ class Individual:
             return age
         return None
 
+    def is_birth_before_death(self):
+        if not self.birth_date or not self.birth_date.strip():
+            return "Unknown Birthdate"
+        elif not self.death_date or not self.death_date.strip():
+            return "Unknown Death Date"
+        else:
+            birth_date_obj = datetime.strptime(self.birth_date, '%Y-%m-%d')
+            death_date_obj = datetime.strptime(self.death_date, '%Y-%m-%d')
+            if birth_date_obj < death_date_obj:
+                return "Yes"
+            else:
+                return "No"
+
+    def find_missing_required_fields(self):
+        required_fields = {
+            "Name": self.name,
+            "Sex": self.sex,
+            "Birth Date": self.birth_date,
+            "Child Of (FAMC)": self.child_of
+        }
+
+        missing_fields = [field for field, value in required_fields.items() if not value]
+        return missing_fields
+
 
 class Family:
     def __init__(self, identifier, husband_id, husband_name=None, wife_id=None, wife_name=None, children=None,
-                 marriage_date=None, divorce_date=None, is_duplicate=False):
+                 marriage_date=None, divorce_date=None, is_duplicate=False, childrenIds=None):
         self._identifier = identifier
         self._husband_id = husband_id
         self._husband_name = husband_name
@@ -111,6 +136,9 @@ class Family:
         self._marriage_date = marriage_date
         self._divorce_date = divorce_date
         self._is_duplicate = is_duplicate
+        self._childrenIds = childrenIds
+
+        
 
     @property
     def identifier(self):
@@ -171,6 +199,40 @@ class Family:
     @divorce_date.setter
     def divorce_date(self, value):
         self._divorce_date = value
+
+    @property
+    def childrenIds(self):
+        return self._childrenIds
+    
+    @childrenIds.setter
+    def childrenIds(self, value):
+        self._childrenIds = value   
+
+
+
+    def unique_family_names(self):
+
+        for child in self._children:
+            name = child.name.split(" ")[0]
+            birthday = child.birth_date
+            if(name == self.husband_name.split(" ")[0] or name == self.wife_name.split(" ")[0]):
+                return "NO"
+            for child2 in self._children:
+                name2 = child2.name.split(" ")[0]
+                birthday2 = child2.birth_date
+                if(birthday2 != birthday):
+                    if(name == name2):
+                        return "NO"
+        return "YES"
+    
+    def children_before_marriage(self):
+        if self.marriage_date is not None:
+            marriage_date_obj = datetime.strptime(self.marriage_date, '%Y-%m-%d')
+            for child in self._children:
+                child_birth_date_obj = datetime.strptime(child.birth_date, '%Y-%m-%d')
+                if child_birth_date_obj < marriage_date_obj:
+                    return "YES"
+        return "NO"
 
 
 def is_valid_tag(tag, level):
@@ -264,7 +326,8 @@ def process_gedcom_line(file, line, individuals, families, current_individual, c
         current_family.wife_name = individuals.get(components[2], None).name
 
     elif tag == 'CHIL' and is_valid_tag(tag, level):
-        current_family.children.append(components[2])
+        current_family.children.append(individuals.get(components[2], None))
+        current_family.childrenIds.append(components[2])
 
     elif tag == 'MARR' and is_valid_tag(tag, level):
         marriage_date = ' '.join(file.readline().strip().split()[2:])
@@ -319,10 +382,11 @@ def DatesBeforeCurrDate(individuals, families):
             bad_date_list.append(fam_data.divorce_date)
             print(f"ERROR: FAMILY: US01: {extract_numeric_part(fam_id)}: Divorce Date {fam_data.divorce_date}")
 
-
     if not bad_date_list:
         print("US01: All the Dates are before the current date.")
-
+        return 'Yes'
+    else:
+        return 'No'
 
 def parse_gedcom(file_path):
     individuals = {}
@@ -361,12 +425,11 @@ def parse_gedcom(file_path):
         print(f"Error: File not found - {file_path}")
     except Exception as e:
         print(f"Error: An unexpected error occurred - {e}")
-
     return individuals, families, duplicate_individual, duplicate_family
 
 if __name__ == '__main__':
     # Check if the user provided a command line argument for the GEDCOM file path
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print("Error: Please provide the GEDCOM file path as a command line argument.")
         sys.exit(1)
 
@@ -378,23 +441,28 @@ if __name__ == '__main__':
     sorted_individuals = dict(sorted(individuals_data.items(), key=lambda x: extract_numeric_part(x[0])))
     sorted_families = dict(sorted(families_data.items(), key=lambda x: extract_numeric_part(x[0])))
 
-    indi_table = PrettyTable(["Individual ID", "Name", "Sex", "Birth Date", "Age", "Death Date", "Alive", "Spouse Of", "Child Of"])
+    indi_table = PrettyTable(["Individual ID", "Name", "Sex", "Birth Date", "Age", "Death Date", "Alive", "Spouse Of", "Child Of",
+                              "Birth Before Death", "Missing Required Fields (Required fields are Name, "
+                                                    "Sex, Birth Date, and Child Of"])
     for indi_id, indi_data in sorted_individuals.items():
         spouse_of_str = ", ".join(indi_data.spouse_of) if indi_data.spouse_of else 'NA'
+        missing_required_fields = indi_data.find_missing_required_fields()
+        missing_required_fields_str = ", ".join(missing_required_fields) if missing_required_fields else 'NA'
+        birth_before_death_str = indi_data.is_birth_before_death()
         indi_table.add_row(
             [indi_id, indi_data.name, indi_data.sex, indi_data.birth_date, indi_data.age, indi_data.death_date, indi_data.alive,
-             spouse_of_str, indi_data.child_of])
+             spouse_of_str, indi_data.child_of, birth_before_death_str, missing_required_fields_str])
 
     print("Individuals:")
     print(indi_table)
 
     fam_table = PrettyTable(
-        ["Family ID", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children", "Marriage Date", "Divorce Date"])
+        ["Family ID", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children", "Marriage Date", "Divorce Date", "Unique Names", "Pre Marriage Child"])
     for fam_id, fam_data in sorted_families.items():
-        children_str = ", ".join(fam_data.children) if fam_data.children else 'NA'
+        children_str = ", ".join(fam_data.childrenIds) if fam_data.childrenIds else 'NA'
         fam_table.add_row(
             [fam_id, fam_data.husband_id, fam_data.husband_name, fam_data.wife_id, fam_data.wife_name, children_str,
-             fam_data.marriage_date, fam_data.divorce_date])
+             fam_data.marriage_date, fam_data.divorce_date, fam_data.unique_family_names(), fam_data.children_before_marriage()])
 
     print("\nFamilies:")
     print(fam_table)
@@ -405,7 +473,7 @@ if __name__ == '__main__':
     for duplicate_individual_id in duplicate_individual:
         print(f"ERROR: INDIVIDUAL: US22: {extract_numeric_part(duplicate_individual_id)}: Duplicate Individual Id: {duplicate_individual_id}")
 
-    # Access and print information about duplicate individuals
+    # Access and print information about duplicate Family
     for duplicate_family_id in duplicate_family:
         print(f"ERROR: FAMILY: US22: {extract_numeric_part(duplicate_family_id)}: Duplicate Family Id: {duplicate_family_id}")
 
