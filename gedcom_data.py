@@ -4,7 +4,7 @@ import sys
 
 
 class Individual:
-    def __init__(self, identifier, name, sex, birth_date, death_date=None, child_of=None, spouse_of=None, age=None,
+    def __init__(self, identifier, name="", sex="", birth_date="", death_date="", child_of="", spouse_of=None, age="",
                  alive=True):
         self._identifier = identifier
         self._name = name
@@ -84,11 +84,10 @@ class Individual:
     def alive(self, value):
         self._alive = value
 
-
     def calculate_age(self):
-        if self.birth_date is not None:
+        if self.birth_date is not None and (self.death_date.strip() != ""):
             birth_date_obj = datetime.strptime(self.birth_date, '%Y-%m-%d')
-            if self.death_date is not None:
+            if self.death_date is not None and (self.death_date.strip() != ""):
                 death_date_obj = datetime.strptime(self.death_date, '%Y-%m-%d')
                 age = death_date_obj.year - birth_date_obj.year - ((death_date_obj.month, death_date_obj.day)
                                                                    < (birth_date_obj.month, birth_date_obj.day))
@@ -225,12 +224,13 @@ class Family:
     
     def children_before_marriage(self):
         #todo return the reason why
-        if self.marriage_date is not None:
+        if self.marriage_date is not None and (self.marriage_date.strip() != ""):
             marriage_date_obj = datetime.strptime(self.marriage_date, '%Y-%m-%d')
             for child in self._children:
-                child_birth_date_obj = datetime.strptime(child.birth_date, '%Y-%m-%d')
-                if child_birth_date_obj < marriage_date_obj:
-                    return "ERROR: FAMILY: US02: " + self.identifier + ": Child " + child.identifier + " was born before marriage on " + self.marriage_date
+                if child.birth_date is not None and (child.birth_date.strip() != ""):
+                    child_birth_date_obj = datetime.strptime(child.birth_date, '%Y-%m-%d')
+                    if child_birth_date_obj < marriage_date_obj:
+                        return "ERROR: FAMILY: US02: " + self.identifier + ": Child " + child.identifier + " was born before marriage on " + self.marriage_date
         return ""
 
 
@@ -254,9 +254,6 @@ def print_missing_required_fields_for_all_individuals(individuals):
             has_missing_required_fields = True
             print(missing_required_fields_str)
 
-    if not has_missing_required_fields:
-        print("No individual is missing required fields.")
-
 
 def print_birth_before_death_errors_for_all_individuals(individuals):
     has_birth_before_death_errors = False
@@ -266,9 +263,6 @@ def print_birth_before_death_errors_for_all_individuals(individuals):
             has_birth_before_death_errors = True
             print(birth_before_death_error_str)
 
-    if not has_birth_before_death_errors:
-        print("No individual has birth before death errors.")
-
 
 def extract_numeric_part(identifier):
     return int(identifier[2:-1])
@@ -276,8 +270,9 @@ def extract_numeric_part(identifier):
 
 def format_date(date_str):
     try:
-        date_obj = datetime.strptime(date_str, '%d %b %Y')
-        return date_obj.strftime('%Y-%m-%d')
+        if date_str is not None and (date_str.strip() != ""):
+            date_obj = datetime.strptime(date_str, '%d %b %Y')
+            return date_obj.strftime('%Y-%m-%d')
     except ValueError:
         return date_str
 
@@ -299,8 +294,7 @@ def process_gedcom_line(file, line, individuals, families, current_individual, c
         arguments = temp
 
     if tag == 'INDI' and is_valid_tag(tag, level):
-        current_individual = Individual(components[1], None, None, None, None,
-                                        None, [], None, True)
+        current_individual = Individual(components[1], spouse_of=[])
         individuals[current_individual.identifier] = current_individual
 
     elif tag == 'NAME' and is_valid_tag(tag, level):
@@ -396,11 +390,13 @@ def parse_gedcom(file_path):
 
 if __name__ == '__main__':
     # Check if the user provided a command line argument for the GEDCOM file path
-    if len(sys.argv) < 2:
-        print("Error: Please provide the GEDCOM file path as a command line argument.")
-        sys.exit(1)
+    #if len(sys.argv) < 2:
+     #   print("Error: Please provide the GEDCOM file path as a command line argument.")
+      #  sys.exit(1)
 
-    gedcom_file_path = sys.argv[1]
+    #gedcom_file_path = sys.argv[1]
+
+    gedcom_file_path = 'Family-Tree.ged'
 
     individuals_data, families_data = parse_gedcom(gedcom_file_path)
 
@@ -421,11 +417,6 @@ if __name__ == '__main__':
 
     print("Individuals:")
     print(indi_table)
-
-    print('\nINDIVIDUALS MISSING REQUIRED FIELDS:\n')
-    print_missing_required_fields_for_all_individuals(sorted_individuals)
-    print('\nINDIVIDUALS WITH BIRTH BEFORE DEATH:\n')
-    print_birth_before_death_errors_for_all_individuals(sorted_individuals)
 
     fam_errors = []
 
@@ -449,3 +440,6 @@ if __name__ == '__main__':
     print()
     for err in fam_errors: 
         print(err)
+
+    print_missing_required_fields_for_all_individuals(sorted_individuals)
+    print_birth_before_death_errors_for_all_individuals(sorted_individuals)
