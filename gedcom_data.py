@@ -207,45 +207,37 @@ class Family:
         self._childrenIds = value
 
     def unique_family_names(self):
+
         # todo return the reason why
         for child in self._children:
-            print(f"Checking child: {child}")
-            if child and hasattr(child, 'name') and child.name:
+            if (child.name == None):
+                name = "Unknown"
+            else:
                 name = child.name.split(" ")[0]
-            else:
-                print(f"Skipping child: {child}")
-                continue  # Skip this iteration if child or child.name is None
 
-            if self.husband_name:
-                husband_name = self.husband_name.split(" ")[0]
-            else:
+            if (self.husband_name == None):
                 husband_name = "Unknown"
-
-            if self.wife_name:
-                wife_name = self.wife_name.split(" ")[0]
             else:
-                wife_name = "Unknown"
+                husband_name = self.husband_name.split(" ")[0]
 
+            if (self.wife_name == None):
+                wife_name = "Unknown"
+            else:
+                wife_name = self.wife_name.split(" ")[0]
             birthday = child.birth_date
-            if name == husband_name:
+            if (name == husband_name):
                 return "ERROR: FAMILY: US25: " + self.identifier + ": Child " + name + " has the same name as father " + husband_name
             elif name == wife_name:
                 return "ERROR: FAMILY: US25: " + self.identifier + ": Child " + name + " has the same name as mother " + wife_name
             for child2 in self._children:
-                print(f"Checking child2: {child2}")
-                try:
-                    if child2 and hasattr(child2, 'name') and child2.name:
-                        name2 = child2.name.split(" ")[0]
-                    else:
-                        print(f"Skipping child2: {child2}")
-                        continue  # Skip this iteration if child2 or child2.name is None
-
-                    birthday2 = child2.birth_date
-
-                    if birthday2 != birthday and name == name2:
-                        return "ERROR: FAMILY: US25: " + self.identifier + ": Child " + name + " has the same name as sibling " + name2
-                except Exception as e2:
-                    print(f"Exception in inner loop: {e2}")
+                if (child2.name == None):
+                    name2 = "Unknown"
+                else:
+                    name2 = child2.name.split(" ")[0]
+                birthday2 = child2.birth_date
+                if (birthday2 != birthday):
+                    if (name == name2):
+                        "ERROR: FAMILY: US25: " + self.identifier + ": Child " + name + " has the same name as sibling " + name2
         return ""
 
     def children_before_marriage(self):
