@@ -103,7 +103,7 @@ class Individual:
             birth_date_obj = datetime.strptime(self.birth_date, '%Y-%m-%d')
             death_date_obj = datetime.strptime(self.death_date, '%Y-%m-%d')
             if birth_date_obj >= death_date_obj:
-                return f"ERROR: INDIVIDUAL: US03: {self.identifier}: Birthdate {self.birth_date} is after death date {self.death_date}"
+                return f"ERROR: INDIVIDUAL: US03: {self.identifier}: Birthdate {self.birth_date} is the same as or after death date {self.death_date}"
 
     def find_missing_required_fields(self):
         required_fields = {
@@ -263,20 +263,16 @@ def is_valid_tag(tag, level):
 
 
 def print_missing_required_fields_for_all_individuals(individuals):
-    has_missing_required_fields = False
     for individual in individuals.values():
         missing_required_fields_str = individual.find_missing_required_fields()
         if missing_required_fields_str:
-            has_missing_required_fields = True
             print(missing_required_fields_str)
 
 
 def print_birth_before_death_errors_for_all_individuals(individuals):
-    has_birth_before_death_errors = False
     for individual in individuals.values():
         birth_before_death_error_str = individual.is_birth_before_death()
         if birth_before_death_error_str:
-            has_birth_before_death_errors = True
             print(birth_before_death_error_str)
 
 
@@ -449,5 +445,5 @@ if __name__ == '__main__':
     for err in fam_errors: 
         print(err)
 
-print_missing_required_fields_for_all_individuals(sorted_individuals)
-print_birth_before_death_errors_for_all_individuals(sorted_individuals)
+    print_missing_required_fields_for_all_individuals(sorted_individuals)
+    print_birth_before_death_errors_for_all_individuals(sorted_individuals)
