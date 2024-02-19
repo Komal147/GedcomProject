@@ -10,9 +10,7 @@
             "request": "launch",
             "program": "gedcom_data.py",
             "console": "integratedTerminal",
-            "args": [
-                "Family-Tree.ged",
-            ],
+            "args": "Family-Tree.ged"
         }
     ]
 }
