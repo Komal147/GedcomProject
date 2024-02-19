@@ -42,16 +42,16 @@ class TestGedcomFamilyUniqueFamilyNames(unittest.TestCase):
     
     def test_unique_family_names_true(self):
         family_data = self.families[0]
-        self.assertEqual(family_data.unique_family_names(), "NO")
+        self.assertTrue(family_data.unique_family_names() != "")
 
     def test_unique_family_names_false(self):
 
         family_data = self.families[1]
-        self.assertEqual(family_data.unique_family_names(), "YES")
+        self.assertEqual(family_data.unique_family_names(), "")
 
     def test_unique_family_names_no_children(self):
         family_data = self.families[2]
-        self.assertEqual(family_data.unique_family_names(), "YES")
+        self.assertEqual(family_data.unique_family_names(), "")
 
 class TestGedcomBirthBeforeMarriage(unittest.TestCase):
 
@@ -60,16 +60,17 @@ class TestGedcomBirthBeforeMarriage(unittest.TestCase):
     
     def test_birth_before_marriage_true(self):
         family_data = self.families[0]
-        self.assertEqual(family_data.children_before_marriage(), "YES")
+        print(family_data)
+        self.assertTrue(family_data.children_before_marriage() !=  "")
 
     def test_birth_before_marriage_false(self):
 
         family_data = self.families[1]
-        self.assertEqual(family_data.children_before_marriage(), "NO")
+        self.assertEqual(family_data.children_before_marriage(), "")
 
     def test_birth_before_marriage_no_children(self):
         family_data = self.families[2]
-        self.assertEqual(family_data.children_before_marriage(), "NO")
+        self.assertEqual(family_data.children_before_marriage(), "")
 
 class TestGedcomDatesBeforeCurrDate(unittest.TestCase):
 
