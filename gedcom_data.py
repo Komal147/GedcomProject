@@ -100,17 +100,12 @@ class Individual:
         return None
 
     def is_birth_before_death(self):
-        if not self.birth_date or not self.birth_date.strip():
-            return "Unknown Birthdate"
-        elif not self.death_date or not self.death_date.strip():
-            return "Unknown Death Date"
-        else:
+        if (self.birth_date is not None and self.birth_date.strip() != "") and (
+                self.death_date is not None and self.death_date.strip() != ""):
             birth_date_obj = datetime.strptime(self.birth_date, '%Y-%m-%d')
             death_date_obj = datetime.strptime(self.death_date, '%Y-%m-%d')
-            if birth_date_obj < death_date_obj:
-                return "Yes"
-            else:
-                return "No"
+            if birth_date_obj >= death_date_obj:
+                return f"ERROR: INDIVIDUAL: US03: {self.identifier}: Birthdate {self.birth_date} is the same as or after death date {self.death_date}"
 
     def find_missing_required_fields(self):
         required_fields = {
@@ -121,7 +116,9 @@ class Individual:
         }
 
         missing_fields = [field for field, value in required_fields.items() if not value]
-        return missing_fields
+
+        if missing_fields:
+            return f"ERROR: INDIVIDUAL: US23: {self.identifier}: Missing required fields {', '.join(missing_fields)}"
 
 
 class Family:
@@ -262,6 +259,20 @@ def is_valid_tag(tag, level):
             return True
 
     return False
+
+
+def print_missing_required_fields_for_all_individuals(individuals):
+    for individual in individuals.values():
+        missing_required_fields_str = individual.find_missing_required_fields()
+        if missing_required_fields_str:
+            print(missing_required_fields_str)
+
+
+def print_birth_before_death_errors_for_all_individuals(individuals):
+    for individual in individuals.values():
+        birth_before_death_error_str = individual.is_birth_before_death()
+        if birth_before_death_error_str:
+            print(birth_before_death_error_str)
 
 
 def extract_numeric_part(identifier):
@@ -474,19 +485,14 @@ if __name__ == '__main__':
     sorted_individuals = dict(sorted(individuals_data.items(), key=lambda x: extract_numeric_part(x[0])))
     sorted_families = dict(sorted(families_data.items(), key=lambda x: extract_numeric_part(x[0])))
 
-    indi_table = PrettyTable(
-        ["Individual ID", "Name", "Sex", "Birth Date", "Age", "Death Date", "Alive", "Spouse Of", "Child Of",
-         "Birth Before Death", "Missing Required Fields (Required fields are Name, "
-                               "Sex, Birth Date, and Child Of"])
+    indi_table = PrettyTable(["Individual ID", "Name", "Sex", "Birth Date", "Age", "Death Date", "Alive", "Spouse Of", "Child Of"])
+
     for indi_id, indi_data in sorted_individuals.items():
         spouse_of_str = ", ".join(indi_data.spouse_of) if indi_data.spouse_of else 'NA'
-        missing_required_fields = indi_data.find_missing_required_fields()
-        missing_required_fields_str = ", ".join(missing_required_fields) if missing_required_fields else 'NA'
-        birth_before_death_str = indi_data.is_birth_before_death()
         indi_table.add_row(
-            [indi_id, indi_data.name, indi_data.sex, indi_data.birth_date, indi_data.age, indi_data.death_date,
-             indi_data.alive,
-             spouse_of_str, indi_data.child_of, birth_before_death_str, missing_required_fields_str])
+            [indi_id, indi_data.name, indi_data.sex, indi_data.birth_date, indi_data.age, indi_data.death_date, indi_data.alive,
+             spouse_of_str, indi_data.child_of])
+
 
     print("Individuals:")
     print(indi_table)
@@ -526,3 +532,6 @@ if __name__ == '__main__':
     print()
     for err in fam_errors:
         print(err)
+
+    print_missing_required_fields_for_all_individuals(sorted_individuals)
+    print_birth_before_death_errors_for_all_individuals(sorted_individuals)
