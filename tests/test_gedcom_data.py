@@ -72,6 +72,15 @@ class TestGedcomBirthBeforeMarriage(unittest.TestCase):
         family_data = self.families[2]
         self.assertEqual(family_data.children_before_marriage(), "")
 
+    def test_birth_before_marriage_none_date(self):
+
+        family_data = self.families[3]
+        self.assertEqual(family_data.children_before_marriage(), "")
+
+    def test_birth_before_marriage_no_children_second(self):
+        family_data = self.families[4]
+        self.assertEqual(family_data.children_before_marriage(), "")
+
 class TestGedcomDatesBeforeCurrDate(unittest.TestCase):
 
     def setUp(self) : 
