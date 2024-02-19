@@ -1,0 +1,86 @@
+Individuals:
++---------------+--------------------------+------+------------+------+------------+-------+--------------+----------+
+| Individual ID |           Name           | Sex  | Birth Date | Age  | Death Date | Alive |  Spouse Of   | Child Of |
++---------------+--------------------------+------+------------+------+------------+-------+--------------+----------+
+|      @I1@     |     Ravi /Krishnan/      |  M   | 1965-05-08 |  58  |    None    |  True |     @F1@     |   @F2@   |
+|      @I2@     |    Chandrika /Vivek/     |  F   | 1970-02-08 |  54  |    None    |  True |     @F1@     |   None   |
+|      @I3@     | Thiruvengadam /Krishnan/ |  M   | 2060-05-03 | -37  |    None    |  True |     @F2@     |   @F3@   |
+|      @I4@     |      Aparna /Vijay/      |  F   | 1945-06-03 |  78  |    None    |  True |     @F2@     |   @F4@   |
+|      @I5@     |     Vivek /Aravind/      |  M   | 1915-10-03 | 114  | 2030-05-04 | False |     @F4@     |   None   |
+|      @I6@     | Sandhya /Krishnamurthy/  |  F   | 1920-04-06 |  94  | 2015-04-04 | False |     @F4@     |   @F5@   |
+|      @I7@     |     Arun /Krishnan/      |  M   | 1970-02-03 |  54  |    None    |  True |     @F6@     |   @F2@   |
+|      @I8@     |      Ramya /Balaji/      |  F   | 1974-03-03 |  49  |    None    |  True |     @F6@     |   None   |
+|      @I9@     |     Sujata /Aravind/     |  F   | 1945-08-15 |  34  | 1980-06-03 | False |     @F7@     |   @F4@   |
+|     @I10@     |      Ramesh /Gopal/      |  M   | 1941-03-11 |  82  |    None    |  True |  @F7@, @F8@  |   None   |
+|     @I11@     |      Renuka /Gopal/      |  F   | 1968-07-09 |  55  |    None    |  True |      NA      |   @F7@   |
+|     @I12@     |    Ramaswamy /Gopal/     |  M   | 1971-08-05 |  52  |    None    |  True |      NA      |   @F7@   |
+|     @I13@     |       Radha /Ravi/       |  F   | 1953-04-06 |  70  |    None    |  True |     @F8@     |   None   |
+|     @I14@     |      Anand /Gopal/       |  M   | 1986-06-07 |  37  |    None    |  True |     @F9@     |   @F8@   |
+|     @I15@     |      Anand /Gopal/       |  F   | 1988-08-05 |  35  |    None    |  True |    @F10@     |   @F8@   |
+|     @I16@     |     Veena /Krishnan/     |  F   | 1990-07-08 |  33  |    None    |  True |     @F9@     |   None   |
+|     @I17@     |    Vivek /Narayanan/     |  M   | 1985-08-06 |  38  |    None    |  True |    @F10@     |   None   |
+|     @I18@     |      Geetha /Gopal/      |  F   | 2007-08-04 |  16  |    None    |  True |      NA      |   @F9@   |
+|     @I19@     |     Ravi /Krishnan/      |  M   | 1998-05-05 | -83  | 1915-09-04 | False |     @F3@     |   None   |
+|     @I20@     |     Indira /Rajesh/      |  F   | 1920-09-06 |  98  | 2019-09-05 | False |     @F3@     |  @F11@   |
+|     @I21@     |    Indira /Krishnan/     | None | 1946-08-06 |  77  |    None    |  True |    @F12@     |   @F3@   |
+|     @I22@     |      Vishak /Ravi/       | None | 1939-07-05 |  84  |    None    |  True |    @F12@     |   None   |
+|     @I23@     |      Suresh /Ravi/       |  M   |    None    | None |    None    |  True |    @F13@     |  @F12@   |
+|     @I24@     |      Swathi /Varun/      |  F   | 1969-05-08 |  54  |    None    |  True |    @F13@     |   None   |
+|     @I25@     |      Ram /Aravind/       |  M   | 1890-04-04 | 100  | 1990-04-08 | False |     @F5@     |  @F14@   |
+|     @I26@     |     Subha /Pradeep/      |  F   | 1895-08-05 | 104  | 2000-02-03 | False |     @F5@     |   None   |
+|     @I27@     |  Sanjana /Balachandar/   |  F   | 1895-05-06 |  80  | 1975-12-06 | False |    @F11@     |   None   |
+|     @I28@     |      Raghu /Rajesh/      |  M   | 1892-09-08 |  87  | 1980-04-05 | False |    @F11@     |  @F15@   |
+|     @I29@     |    Srinivas /Aravind/    |  M   | 1923-05-07 |  56  | 1980-04-04 | False |    @F16@     |   @F5@   |
+|     @I30@     |      Jaya /Sampath/      |  F   | 1928-09-04 |  95  |    None    |  True |    @F16@     |   None   |
+|     @I31@     |     Sriram /Aravind/     |  M   | 1950-07-07 |  73  |    None    |  True |      NA      |  @F16@   |
+|     @I32@     |     Ramesh /Aravind/     |  M   | 1925-03-04 | -65  | 1860-05-04 | False |    @F14@     |   None   |
+|     @I33@     | Chandra /Vijayaraghavan/ |  F   | 1865-05-03 |  54  | 1920-04-03 | False |    @F14@     |   None   |
+|     @I34@     | Sushmitha /Venkateshan/  |  F   | 1870-09-04 |  69  | 1940-04-04 | False | @F15@, @F15@ |   None   |
++---------------+--------------------------+------+------------+------+------------+-------+--------------+----------+
+
+Families:
++-----------+------------+-------------------------+---------+-------------------------+--------------+---------------+--------------+
+| Family ID | Husband ID |       Husband Name      | Wife ID |        Wife Name        |   Children   | Marriage Date | Divorce Date |
++-----------+------------+-------------------------+---------+-------------------------+--------------+---------------+--------------+
+|    @F1@   |    @I1@    |     Ravi /Krishnan/     |   @I2@  |    Chandrika /Vivek/    |      NA      |   2099-05-05  |     None     |
+|    @F4@   |    @I5@    |     Vivek /Aravind/     |   @I6@  | Sandhya /Krishnamurthy/ |  @I4@, @I9@  |   1940-08-08  |     None     |
+|    @F5@   |   @I25@    |      Ram /Aravind/      |  @I26@  |     Subha /Pradeep/     | @I6@, @I29@  |   1917-09-05  |     None     |
+|    @F6@   |   @I10@    |      Ramesh /Gopal/     |   @I9@  |     Sujata /Aravind/    | @I11@, @I12@ |   1965-04-03  |  2010-09-20  |
+|    @F8@   |   @I10@    |      Ramesh /Gopal/     |  @I13@  |       Radha /Ravi/      | @I14@, @I15@ |   1983-03-10  |     None     |
+|    @F9@   |   @I14@    |      Anand /Gopal/      |  @I16@  |     Veena /Krishnan/    |    @I18@     |   2004-03-06  |     None     |
+|   @F10@   |   @I17@    |    Vivek /Narayanan/    |  @I15@  |      Anand /Gopal/      |      NA      |   2003-05-07  |     None     |
+|   @F11@   |   @I28@    |      Raghu /Rajesh/     |  @I27@  |  Sanjana /Balachandar/  |    @I20@     |   1917-04-05  |     None     |
+|   @F12@   |   @I22@    |      Vishak /Ravi/      |  @I21@  |    Indira /Krishnan/    |    @I23@     |   1962-06-06  |     None     |
+|   @F13@   |   @I23@    |      Suresh /Ravi/      |  @I24@  |      Swathi /Varun/     |      NA      |   1990-08-19  |     None     |
+|   @F15@   |   @I34@    | Sushmitha /Venkateshan/ |  @I35@  |           None          |    @I28@     |   1890-05-03  |     None     |
+|   @F16@   |   @I29@    |    Srinivas /Aravind/   |  @I30@  |      Jaya /Sampath/     |    @I31@     |   1945-05-05  |     None     |
++-----------+------------+-------------------------+---------+-------------------------+--------------+---------------+--------------+
+ERROR: INDIVIDUAL: US22: 34: Duplicate Individual Id: @I34@
+ERROR: FAMILY: US22: 5: Duplicate Family Id: @F5@
+ERROR: INDIVIDUAL: US01: 3: Birthday 2060-05-03
+ERROR: INDIVIDUAL: US01: 5: Death Date 2030-05-04
+ERROR: FAMILY: US01: 1: Marriage Date 2099-05-05
+
+ERROR: FAMILY: US02: @F14@: Child @I25@ was born before marriage on 1892-10-03
+ERROR: FAMILY: US02: @F2@: Child @I1@ was born before marriage on 1968-05-06
+ERROR: FAMILY: US25: @F3@: Child Indira has the same name as mother Indira
+ERROR: INDIVIDUAL: US23: @I2@: Missing required fields Child Of (FAMC)
+ERROR: INDIVIDUAL: US23: @I5@: Missing required fields Child Of (FAMC)
+ERROR: INDIVIDUAL: US23: @I8@: Missing required fields Child Of (FAMC)
+ERROR: INDIVIDUAL: US23: @I10@: Missing required fields Child Of (FAMC)
+ERROR: INDIVIDUAL: US23: @I13@: Missing required fields Child Of (FAMC)
+ERROR: INDIVIDUAL: US23: @I16@: Missing required fields Child Of (FAMC)
+ERROR: INDIVIDUAL: US23: @I17@: Missing required fields Child Of (FAMC)
+ERROR: INDIVIDUAL: US23: @I19@: Missing required fields Child Of (FAMC)
+ERROR: INDIVIDUAL: US23: @I21@: Missing required fields Sex
+ERROR: INDIVIDUAL: US23: @I22@: Missing required fields Sex, Child Of (FAMC)
+ERROR: INDIVIDUAL: US23: @I23@: Missing required fields Birth Date
+ERROR: INDIVIDUAL: US23: @I24@: Missing required fields Child Of (FAMC)
+ERROR: INDIVIDUAL: US23: @I26@: Missing required fields Child Of (FAMC)
+ERROR: INDIVIDUAL: US23: @I27@: Missing required fields Child Of (FAMC)
+ERROR: INDIVIDUAL: US23: @I30@: Missing required fields Child Of (FAMC)
+ERROR: INDIVIDUAL: US23: @I32@: Missing required fields Child Of (FAMC)
+ERROR: INDIVIDUAL: US23: @I33@: Missing required fields Child Of (FAMC)
+ERROR: INDIVIDUAL: US23: @I34@: Missing required fields Child Of (FAMC)
+ERROR: INDIVIDUAL: US03: @I19@: Birthdate 1998-05-05 is the same as or after death date 1915-09-04
+ERROR: INDIVIDUAL: US03: @I32@: Birthdate 1925-03-04 is the same as or after death date 1860-05-04
