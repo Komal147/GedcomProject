@@ -196,11 +196,12 @@
 2 _MARNM Krishnan
 1 SEX M
 1 BIRT
-2 DATE 4 SEP 1915
-1 DEAT Y
 2 DATE 5 MAY 1998
+1 DEAT Y
+2 DATE 4 SEP 1915
 1 FAMS @F3@
 0 @I20@ INDI
+1 NAME Indira /Rajesh/
 2 GIVN Indira
 2 SURN Rajesh
 2 _MARNM Krishnan
@@ -215,8 +216,7 @@
 1 NAME Indira /Krishnan/
 2 GIVN Geetha
 2 SURN Krishnan
-2 _MARNM Krishnan
-1 SEX F
+2 _MARNM Krishnan1 SEX F
 1 BIRT
 2 DATE 6 AUG 1946
 1 FAMS @F12@
