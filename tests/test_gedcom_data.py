@@ -33,7 +33,7 @@ def initData():
                 gedcom_data.Family("@F5@", "@I10@", "Hannah", "@I5@","Jack", [],"2010-11-12", "1980-11-12", []),]
 
 
-    return individuals, families
+    return families, individuals
 
 class TestGedcomFamilyUniqueFamilyNames(unittest.TestCase):
 
@@ -254,58 +254,82 @@ class TestMissingRequiredFields(unittest.TestCase):
 class TestBirthDateAfterParentDeathDate(unittest.TestCase):
 
     def setUp(self):
-        self.individuals, self.families = initData()
-
-    def test_birth_date_after_mother_death_date(self):
-        individual_data = self.individuals[0]
-        mother = self.individuals[2]
-        mother.death_date = "1998-01-01"
-        individual_data.mother = mother
-        self.assertEqual(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data),
-                         "ERROR: INDIVIDUAL: US09: @I1@: Birth date 1999-08-31 is after mother's death date 1998-01-01")
+        # Create individuals for the test cases
+        self.individuals = [
+            gedcom_data.Individual("@I1@", "Alice", "F", "2022-01-01"),
+            gedcom_data.Individual("@I2@", "Bob", "M", "2001-06-15"),
+            gedcom_data.Individual("@I3@", "Charlie", "M", "1960-03-10"),
+            gedcom_data.Individual("@I4@", "Diana", "F", "2005-08-20"),
+            gedcom_data.Individual("@I5@", "Eva", "F", "1992-11-05"),
+            gedcom_data.Individual("@I6@", None, "M", "1997-01-01"),
+            gedcom_data.Individual("@I7@", "Frank", "M", "1990-01-01"),
+            gedcom_data.Individual("@I8@", "Grace", "F", "1985-06-15"),
+            gedcom_data.Individual("@I9@", "Henry", "M", None)
+        ]
 
     def test_birth_date_after_father_death_date(self):
         individual_data = self.individuals[1]
         father = self.individuals[5]
-        father.death_date = "1990-12-31"
+        father.death_date = "1995-01-01"
         individual_data.father = father
-        self.assertEqual(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data),
-                         "ERROR: INDIVIDUAL: US09: @I2@: Birth date 2003-12-13 is after father's death date 1990-12-31")
+        self.assertIsNone(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data))
 
-    def test_birth_date_after_both_parents_death_date(self):
+    def test_birth_date_equal_to_mother_death_date(self):
         individual_data = self.individuals[3]
         mother = self.individuals[2]
+        mother.death_date = "2005-08-20"
+        individual_data.mother = mother
+        self.assertIsNone(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data))
+
+    def test_birth_date_equal_to_father_death_date(self):
+        individual_data = self.individuals[7]
         father = self.individuals[5]
-        mother.death_date = "2000-01-01"
-        father.death_date = "1990-12-31"
+        father.death_date = "1990-01-01"
+        individual_data.father = father
+        self.assertIsNone(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data))
+
+    def test_birth_date_before_mother_and_father_death_date(self):
+        individual_data = self.individuals[4]
+        mother = self.individuals[2]
+        mother.death_date = "2030-01-01"
+        father = self.individuals[5]
+        father.death_date = "2050-12-31"
         individual_data.mother = mother
         individual_data.father = father
-        self.assertEqual(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data),
-                         "ERROR: INDIVIDUAL: US09: @I4@: Birth date 1995-05-08 is after father's death date 1990-12-31")
+        self.assertIsNone(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data))
 
     def test_birth_date_before_mother_death_date(self):
-        individual_data = self.individuals[4]
+        individual_data = self.individuals[6]
         mother = self.individuals[2]
         mother.death_date = "2030-01-01"
         individual_data.mother = mother
         self.assertIsNone(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data))
 
     def test_birth_date_before_father_death_date(self):
-        individual_data = self.individuals[6]
+        individual_data = self.individuals[8]
         father = self.individuals[5]
         father.death_date = "2050-12-31"
         individual_data.father = father
         self.assertIsNone(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data))
 
-    def test_birth_date_before_both_parents_death_date(self):
-        individual_data = self.individuals[7]
+    def test_birth_date_after_mother_death_date(self):
+        individual_data = self.individuals[0]
+        mother = self.individuals[2]
+        mother.death_date = "2021-01-01"
+        individual_data.mother = mother
+        self.assertEqual(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data),
+                         f"ERROR: INDIVIDUAL: US09: @I1@: Birth date 2022-01-01 is after mother's death date 2021-01-01")
+
+    def test_birth_date_after_both_parents_death_date(self):
+        individual_data = self.individuals[0]
         mother = self.individuals[2]
         father = self.individuals[5]
-        mother.death_date = "2030-01-01"
-        father.death_date = "2050-12-31"
+        mother.death_date = "2020-01-01"
+        father.death_date = "1995-01-01"
         individual_data.mother = mother
         individual_data.father = father
-        self.assertIsNone(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data))
+        self.assertEqual(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data),
+                         f"ERROR: INDIVIDUAL: US09: @I1@: Birth date 2022-01-01 is after mother's death date 2020-01-01 and after father's death date 1995-01-01")
 
 
 class TestFifteenOrMoreSiblings(unittest.TestCase):

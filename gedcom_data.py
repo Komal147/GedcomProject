@@ -304,12 +304,12 @@ def set_parents_of_individuals(individuals, families):
 
 
 def is_individual_birth_date_after_parent_death_date(individual):
-    if individual.birth_date and individual.mother and individual.mother.death_date and individual.birth_date > individual.mother.death_date:
+    if (individual.birth_date and individual.mother and individual.mother.death_date and individual.birth_date > individual.mother.death_date) and (individual.birth_date and individual.father and individual.father.death_date and individual.birth_date > individual.father.death_date):
+        return (f"ERROR: INDIVIDUAL: US09: {individual.identifier}: "
+                f"Birth date {individual.birth_date} is after mother's death date {individual.mother.death_date} and after father's death date {individual.father.death_date}")
+    elif individual.birth_date and individual.mother and individual.mother.death_date and individual.birth_date > individual.mother.death_date:
         return (f"ERROR: INDIVIDUAL: US09: {individual.identifier}: "
                 f"Birth date {individual.birth_date} is after mother's death date {individual.mother.death_date}")
-    elif individual.birth_date and individual.father and individual.father.death_date and individual.birth_date > individual.father.death_date:
-        return (f"ERROR: INDIVIDUAL: US09: {individual.identifier}: "
-                f"Birth date {individual.birth_date} is after father's death date {individual.father.death_date}")
 
 
 def is_valid_tag(tag, level):
