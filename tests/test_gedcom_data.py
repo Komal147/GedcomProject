@@ -53,6 +53,7 @@ class TestGedcomFamilyUniqueFamilyNames(unittest.TestCase):
         family_data = self.families[2]
         self.assertEqual(family_data.unique_family_names(), "")
 
+
 class TestGedcomBirthBeforeMarriage(unittest.TestCase):
 
     def setUp(self) : 
@@ -80,6 +81,7 @@ class TestGedcomBirthBeforeMarriage(unittest.TestCase):
     def test_birth_before_marriage_no_children_second(self):
         family_data = self.families[4]
         self.assertEqual(family_data.children_before_marriage(), "")
+
 
 class TestGedcomDatesBeforeCurrDate(unittest.TestCase):
 
@@ -247,6 +249,137 @@ class TestMissingRequiredFields(unittest.TestCase):
         individual_data = self.individuals[8]
         self.assertEqual(individual_data.find_missing_required_fields(),
                          "ERROR: INDIVIDUAL: US23: @I12@: Missing required fields Sex")
+
+
+class TestBirthDateAfterParentDeathDate(unittest.TestCase):
+
+    def setUp(self):
+        # Create individuals for the test cases
+        self.individuals = [
+            gedcom_data.Individual("@I1@", "Alice", "F", "2022-01-01"),
+            gedcom_data.Individual("@I2@", "Bob", "M", "2001-06-15"),
+            gedcom_data.Individual("@I3@", "Charlie", "M", "1960-03-10"),
+            gedcom_data.Individual("@I4@", "Diana", "F", "2005-08-20"),
+            gedcom_data.Individual("@I5@", "Eva", "F", "1992-11-05"),
+            gedcom_data.Individual("@I6@", None, "M", "1997-01-01"),
+            gedcom_data.Individual("@I7@", "Frank", "M", "1990-01-01"),
+            gedcom_data.Individual("@I8@", "Grace", "F", "1985-06-15"),
+            gedcom_data.Individual("@I9@", "Henry", "M", None)
+        ]
+
+    def test_birth_date_after_father_death_date(self):
+        individual_data = self.individuals[1]
+        father = self.individuals[5]
+        father.death_date = "1995-01-01"
+        individual_data.father = father
+        self.assertIsNone(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data))
+
+    def test_birth_date_equal_to_mother_death_date(self):
+        individual_data = self.individuals[3]
+        mother = self.individuals[2]
+        mother.death_date = "2005-08-20"
+        individual_data.mother = mother
+        self.assertIsNone(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data))
+
+    def test_birth_date_equal_to_father_death_date(self):
+        individual_data = self.individuals[7]
+        father = self.individuals[5]
+        father.death_date = "1990-01-01"
+        individual_data.father = father
+        self.assertIsNone(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data))
+
+    def test_birth_date_before_mother_and_father_death_date(self):
+        individual_data = self.individuals[4]
+        mother = self.individuals[2]
+        mother.death_date = "2030-01-01"
+        father = self.individuals[5]
+        father.death_date = "2050-12-31"
+        individual_data.mother = mother
+        individual_data.father = father
+        self.assertIsNone(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data))
+
+    def test_birth_date_before_mother_death_date(self):
+        individual_data = self.individuals[6]
+        mother = self.individuals[2]
+        mother.death_date = "2030-01-01"
+        individual_data.mother = mother
+        self.assertIsNone(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data))
+
+    def test_birth_date_before_father_death_date(self):
+        individual_data = self.individuals[8]
+        father = self.individuals[5]
+        father.death_date = "2050-12-31"
+        individual_data.father = father
+        self.assertIsNone(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data))
+
+    def test_birth_date_after_mother_death_date(self):
+        individual_data = self.individuals[0]
+        mother = self.individuals[2]
+        mother.death_date = "2021-01-01"
+        individual_data.mother = mother
+        self.assertEqual(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data),
+                         f"ERROR: INDIVIDUAL: US09: @I1@: Birth date 2022-01-01 is after mother's death date 2021-01-01")
+
+    def test_birth_date_after_both_parents_death_date(self):
+        individual_data = self.individuals[0]
+        mother = self.individuals[2]
+        father = self.individuals[5]
+        mother.death_date = "2020-01-01"
+        father.death_date = "1995-01-01"
+        individual_data.mother = mother
+        individual_data.father = father
+        self.assertEqual(gedcom_data.is_individual_birth_date_after_parent_death_date(individual_data),
+                         f"ERROR: INDIVIDUAL: US09: @I1@: Birth date 2022-01-01 is after mother's death date 2020-01-01 and after father's death date 1995-01-01")
+
+
+class TestFifteenOrMoreSiblings(unittest.TestCase):
+
+    def setUp(self):
+        self.individuals = {
+            "@I1@": gedcom_data.Individual("@I1@", "Tyler", "M", "1999-08-31", None, "", "", 24, False, True),
+            "@I2@": gedcom_data.Individual("@I2@", "John", "M", "2003-12-13", None, "", "", 20, False, True),
+            "@I3@": gedcom_data.Individual("@I3@", "Jane", "F", "1997-08-23", "2018-02-12", "", "", 27, False, False),
+            "@I4@": gedcom_data.Individual("@I4@", "Jill", "F", "1995-05-08", None, "", "", 29, False, True),
+            "@I5@": gedcom_data.Individual("@I5@", "Jack", "M", "1987-02-12", None, "", "", 37, False, True),
+            "@I6@": gedcom_data.Individual("@I6@", "Erica", "F", "2017-01-19", None, "", "", 7, False, True),
+            "@I7@": gedcom_data.Individual("@I7@", "Jeffery", "M", "1997-11-17", None, "", "", 27, False, True),
+            "@I8@": gedcom_data.Individual("@I8@", "Willow", "F", "1999-12-27", None, "", "", 24, False, True),
+            "@I9@": gedcom_data.Individual("@I9@", "Gavin", "M", "1993-12-26", None, "", "", 31, False, True),
+            "@I10@": gedcom_data.Individual("@I10@", "Hannah", "F", "1977-03-22", None, "", "", 47, False, False),
+            "@I11@": gedcom_data.Individual("@I11@", "Jack", "M", "2010-02-13", None, "", "", 37, False, True),
+        }
+
+    def test_fifteen_or_more_siblings_true(self):
+        individual_data = self.individuals["@I1@"]
+        individual_data.child_of = "@F1@"
+        for i in range(2, 17):
+            sibling_id = f"@I{i}@"
+            sibling = gedcom_data.Individual(sibling_id, f"Sib{i}", "M", "2000-01-01", None, "", "", 20, False, True)
+            sibling.child_of = "@F1@"
+            self.individuals[sibling_id] = sibling
+
+        self.assertEqual(individual_data.fifteen_or_more_siblings(self.individuals),
+                         "ERROR: INDIVIDUAL: US15: @I1@: The individual has 15 siblings or more.")
+
+    def test_fifteen_or_more_siblings_false(self):
+        individual_data = self.individuals["@I2@"]
+        individual_data.child_of = "@F1@"
+        for i in range(3, 17):
+            sibling_id = f"@I{i}@"
+            sibling = gedcom_data.Individual(sibling_id, f"Sib{i}", "M", "2000-01-01", None, "", "", 20, False, True)
+            sibling.child_of = "@F1@"
+            self.individuals[sibling_id] = sibling
+
+        self.assertIsNone(individual_data.fifteen_or_more_siblings(self.individuals))
+
+    def test_fifteen_or_more_siblings_no_child_of(self):
+        individual_data = self.individuals["@I3@"]
+        self.assertIsNone(individual_data.fifteen_or_more_siblings(self.individuals))
+
+    def test_fifteen_or_more_siblings_zero_siblings(self):
+        individual_data = self.individuals["@I6@"]
+        individual_data.child_of = "@F3@"
+        self.assertIsNone(individual_data.fifteen_or_more_siblings(self.individuals))
 
 
 if __name__ == '__main__':
