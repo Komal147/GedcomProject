@@ -423,7 +423,40 @@ def DatesBeforeCurrDate(individuals, families):
         return 'Yes'
     else:
         return 'No'
+    
 
+def check_death_and_age(individuals):
+
+    for indi_id, indi_data in individuals.items():
+        if not indi_data.alive and indi_data.death_date is not None:
+                death_date_obj = datetime.strptime(indi_data.death_date, '%Y-%m-%d')
+                birth_date_obj = datetime.strptime(indi_data.birth_date, '%Y-%m-%d')
+                age_at_death = death_date_obj.year - birth_date_obj.year - (
+                        (death_date_obj.month, death_date_obj.day) < (birth_date_obj.month, birth_date_obj.day))
+                if age_at_death > 150:
+                    print(f"ERROR: INDIVIDUAL: US07: {extract_numeric_part(indi_id)}: Age at death is: {age_at_death} greater than 150 years.")
+                
+                
+        if indi_data.alive and indi_data.birth_date is not None:
+            if indi_data.age > 150:
+                print(f"ERROR: INDIVIDUAL: US07: {extract_numeric_part(indi_id)}: Age from birth is: {indi_data.age} greater than 150 years.")
+
+def check_sibling_birth_dates(individuals, families):
+    sibling_birth_dates = {}
+
+    for fam_id, fam_data in families.items():
+        for child_id in fam_data.childrenIds:
+            birth_date = individuals[child_id].birth_date
+            if birth_date in sibling_birth_dates:
+                sibling_birth_dates[birth_date].append(child_id)
+            else:
+                sibling_birth_dates[birth_date] = [child_id]
+
+    for birth_date, sibling_ids in sibling_birth_dates.items():
+        if len(sibling_ids) >= 5:
+            print(f"ERROR: FAMILY: US15: More than five siblings born on the same date ({birth_date}): {', '.join(sibling_ids)}")
+
+            
 
 def parse_gedcom(file_path):
     individuals = {}
@@ -491,7 +524,6 @@ if __name__ == '__main__':
             [indi_id, indi_data.name, indi_data.sex, indi_data.birth_date, indi_data.age, indi_data.death_date, indi_data.alive,
              spouse_of_str, indi_data.child_of])
 
-
     print("Individuals:")
     print(indi_table)
 
@@ -525,6 +557,9 @@ if __name__ == '__main__':
             f"ERROR: FAMILY: US22: {extract_numeric_part(duplicate_family_id)}: Duplicate Family Id: {duplicate_family_id}")
 
     DatesBeforeCurrDate(sorted_individuals, sorted_families)
+    check_death_and_age(sorted_individuals)
+    check_sibling_birth_dates(sorted_individuals, sorted_families)
+
 
     fam_errors.sort()
     print()
