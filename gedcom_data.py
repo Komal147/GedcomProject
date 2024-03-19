@@ -426,20 +426,30 @@ def DatesBeforeCurrDate(individuals, families):
     
 
 def check_death_and_age(individuals):
+    bad_date_list = []
+    bad_age = []
 
     for indi_id, indi_data in individuals.items():
         if not indi_data.alive and indi_data.death_date is not None:
-                death_date_obj = datetime.strptime(indi_data.death_date, '%Y-%m-%d')
-                birth_date_obj = datetime.strptime(indi_data.birth_date, '%Y-%m-%d')
-                age_at_death = death_date_obj.year - birth_date_obj.year - (
-                        (death_date_obj.month, death_date_obj.day) < (birth_date_obj.month, birth_date_obj.day))
-                if age_at_death > 150:
-                    print(f"ERROR: INDIVIDUAL: US07: {extract_numeric_part(indi_id)}: Age at death is: {age_at_death} greater than 150 years.")
-                
-                
+            death_date_obj = datetime.strptime(indi_data.death_date, '%Y-%m-%d')
+            birth_date_obj = datetime.strptime(indi_data.birth_date, '%Y-%m-%d')
+            age_at_death = death_date_obj.year - birth_date_obj.year - (
+                    (death_date_obj.month, death_date_obj.day) < (birth_date_obj.month, birth_date_obj.day))
+            if age_at_death is not None and age_at_death > 150:
+                bad_date_list.append(age_at_death)
+                print(f"ERROR: INDIVIDUAL: US07: {extract_numeric_part(indi_id)}: Age at death is: {age_at_death} greater than 150 years.")
+
         if indi_data.alive and indi_data.birth_date is not None:
-            if indi_data.age > 150:
+            if indi_data.age is not None and indi_data.age > 150:
+                bad_age.append(indi_data.age)
                 print(f"ERROR: INDIVIDUAL: US07: {extract_numeric_part(indi_id)}: Age from birth is: {indi_data.age} greater than 150 years.")
+
+    if not bad_date_list and not bad_age:  # Corrected conditional logic
+        print("US07: Age is less than 150 years")
+        return 'Yes'
+    else:
+        return 'No'
+    
 
 def check_sibling_birth_dates(individuals, families):
     sibling_birth_dates = {}
