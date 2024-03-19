@@ -5,8 +5,7 @@ import sys
 
 class Individual:
     def __init__(self, identifier, name, sex, birth_date, death_date=None, child_of=None, spouse_of=None, age=None,
-                 is_duplicate=False,
-                 alive=True):
+                 is_duplicate=False, alive=True, mother=None, father=None, number_of_siblings=0):
         self._identifier = identifier
         self._name = name
         self._sex = sex
@@ -17,6 +16,9 @@ class Individual:
         self._age = age
         self._alive = alive
         self._is_duplicate = is_duplicate
+        self._mother = mother
+        self._father = father
+        self._number_of_siblings = number_of_siblings
 
     @property
     def identifier(self):
@@ -85,6 +87,40 @@ class Individual:
     @alive.setter
     def alive(self, value):
         self._alive = value
+
+    @property
+    def mother(self):
+        return self._mother
+
+    @mother.setter
+    def mother(self, value):
+        self._mother = value
+
+    @property
+    def father(self):
+        return self._father
+
+    @father.setter
+    def father(self, value):
+        self._father = value
+
+    @property
+    def number_of_siblings(self):
+        return self._number_of_siblings
+
+    @number_of_siblings.setter
+    def number_of_siblings(self, value):
+        self._number_of_siblings = value
+
+    def fifteen_or_more_siblings(self, individuals):
+        if self.child_of:
+            siblings = [ind for ind in individuals.values() if
+                        ind.child_of == self.child_of and ind.identifier != self.identifier]
+            self.number_of_siblings = len(siblings)
+        else:
+            self.number_of_siblings = 0
+        if self.number_of_siblings >= 15:
+            return f"ERROR: INDIVIDUAL: US15: {self.identifier}: The individual has 15 siblings or more."
 
     def calculate_age(self):
         if self.birth_date is not None:
@@ -247,6 +283,33 @@ class Family:
                     if child_birth_date_obj < marriage_date_obj:
                         return "ERROR: FAMILY: US02: " + self.identifier + ": Child " + child.identifier + " was born before marriage on " + self.marriage_date
         return ""
+
+
+def set_parents_of_individuals(individuals, families):
+    for ind_id, individual in individuals.items():
+        child_of_family = individual.child_of
+        mother_id = ''
+        father_id = ''
+
+        for fam_id, family in families.items():
+            if fam_id and child_of_family == fam_id:
+                mother_id = family.wife_id
+                father_id = family.husband_id
+
+        for parent_id, potential_parent in individuals.items():
+            if parent_id and parent_id == mother_id:
+                individual.mother = potential_parent
+            elif parent_id and parent_id == father_id:
+                individual.father = potential_parent
+
+
+def is_individual_birth_date_after_parent_death_date(individual):
+    if (individual.birth_date and individual.mother and individual.mother.death_date and individual.birth_date > individual.mother.death_date) and (individual.birth_date and individual.father and individual.father.death_date and individual.birth_date > individual.father.death_date):
+        return (f"ERROR: INDIVIDUAL: US09: {individual.identifier}: "
+                f"Birth date {individual.birth_date} is after mother's death date {individual.mother.death_date} and after father's death date {individual.father.death_date}")
+    elif individual.birth_date and individual.mother and individual.mother.death_date and individual.birth_date > individual.mother.death_date:
+        return (f"ERROR: INDIVIDUAL: US09: {individual.identifier}: "
+                f"Birth date {individual.birth_date} is after mother's death date {individual.mother.death_date}")
 
 
 def is_valid_tag(tag, level):
@@ -515,23 +578,26 @@ def parse_gedcom(file_path):
 
 if __name__ == '__main__':
     # Check if the user provided a command line argument for the GEDCOM file path
-    if len(sys.argv) < 2:
-        print("Error: Please provide the GEDCOM file path as a command line argument.")
-        sys.exit(1)
+    # if len(sys.argv) < 2:
+    #   print("Error: Please provide the GEDCOM file path as a command line argument.")
+    #  sys.exit(1)
 
-    gedcom_file_path = sys.argv[1]
+    # gedcom_file_path = sys.argv[1]
+    gedcom_file_path = 'Family-Tree.ged'
 
     individuals_data, families_data, duplicate_individual, duplicate_family = parse_gedcom(gedcom_file_path)
 
     sorted_individuals = dict(sorted(individuals_data.items(), key=lambda x: extract_numeric_part(x[0])))
     sorted_families = dict(sorted(families_data.items(), key=lambda x: extract_numeric_part(x[0])))
 
-    indi_table = PrettyTable(["Individual ID", "Name", "Sex", "Birth Date", "Age", "Death Date", "Alive", "Spouse Of", "Child Of"])
+    indi_table = PrettyTable(
+        ["Individual ID", "Name", "Sex", "Birth Date", "Age", "Death Date", "Alive", "Spouse Of", "Child Of"])
 
     for indi_id, indi_data in sorted_individuals.items():
         spouse_of_str = ", ".join(indi_data.spouse_of) if indi_data.spouse_of else 'NA'
         indi_table.add_row(
-            [indi_id, indi_data.name, indi_data.sex, indi_data.birth_date, indi_data.age, indi_data.death_date, indi_data.alive,
+            [indi_id, indi_data.name, indi_data.sex, indi_data.birth_date, indi_data.age, indi_data.death_date,
+             indi_data.alive,
              spouse_of_str, indi_data.child_of])
 
     print("Individuals:")
@@ -578,3 +644,15 @@ if __name__ == '__main__':
 
     print_missing_required_fields_for_all_individuals(sorted_individuals)
     print_birth_before_death_errors_for_all_individuals(sorted_individuals)
+
+    set_parents_of_individuals(sorted_individuals, sorted_families)
+
+    for ind_id, individual in sorted_individuals.items():
+        error = is_individual_birth_date_after_parent_death_date(individual)
+        if error:
+            print(error)
+
+        fifteen_or_more_siblings_error = individual.fifteen_or_more_siblings(sorted_individuals)
+        if fifteen_or_more_siblings_error:
+            print(fifteen_or_more_siblings_error)
+
