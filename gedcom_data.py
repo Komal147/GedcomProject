@@ -513,6 +513,55 @@ def check_death_and_age(individuals):
     else:
         return 'No'
     
+def check_marriage_and_divorce_date(sorted_families):
+    errors = []
+
+    for fam_id, fam_data in sorted_families.items():
+        marriage_date = fam_data.marriage_date
+        divorce_date = fam_data.divorce_date
+
+        if marriage_date is not None and divorce_date is not None:
+            if marriage_date > divorce_date:
+                errors.append(marriage_date)
+                print(f"ERROR: FAMILY: US04: {extract_numeric_part(fam_id)} : Divorce occurs before marriage")
+        elif marriage_date is None and divorce_date is not None:
+            errors.append(marriage_date)
+            print(f"ERROR: FAMILY: US04: {extract_numeric_part(fam_id)}: Divorce date specified but marriage date is missing")
+
+    if not errors:
+        print(f"US04: {extract_numeric_part(fam_id)} : Marriage occure before divorce")
+        return 'Yes'
+    else:
+        return 'No'
+
+
+def check_marriage_before_death(sorted_families, sorted_individuals):
+    errors = []
+
+    for fam_id, fam_data in sorted_families.items():
+        marriage_date = fam_data.marriage_date
+        husband_id = fam_data.husband_id
+        wife_id = fam_data.wife_id
+
+        if marriage_date is not None:
+            if husband_id in sorted_individuals:
+                husband_death_date = sorted_individuals[husband_id].death_date
+                if husband_death_date is not None and marriage_date > husband_death_date:
+                    errors.append(husband_death_date)
+                    print(f"ERROR: FAMILY: US05: {extract_numeric_part(fam_id)}: Marriage occurs after husband's death. ID: {husband_id} Death date:{husband_death_date}")
+
+            if wife_id in sorted_individuals:
+                wife_death_date = sorted_individuals[wife_id].death_date
+                if wife_death_date is not None and marriage_date > wife_death_date:
+                    errors.append(wife_death_date)
+                    print(f"ERROR: FAMILY: US05: {extract_numeric_part(fam_id)}: Marriage occurs after wife's death. ID: {wife_id} Death date:{wife_death_date}")
+    if not errors:
+        print(f"US05: {extract_numeric_part(fam_id)}: Marriage occure before death of spouse")
+        return 'Yes'
+    else:
+        return 'No'
+
+
 
 def check_sibling_birth_dates(individuals, families):
     sibling_birth_dates = {}
@@ -635,6 +684,8 @@ if __name__ == '__main__':
     DatesBeforeCurrDate(sorted_individuals, sorted_families)
     check_death_and_age(sorted_individuals)
     check_sibling_birth_dates(sorted_individuals, sorted_families)
+    check_marriage_and_divorce_date(sorted_families)
+    check_marriage_before_death(sorted_families, sorted_individuals)
 
 
     fam_errors.sort()
