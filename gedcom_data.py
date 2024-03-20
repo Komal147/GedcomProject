@@ -5,7 +5,7 @@ import sys
 
 class Individual:
     def __init__(self, identifier, name, sex, birth_date, death_date=None, child_of=None, spouse_of=None, age=None,
-                 is_duplicate=False, alive=True, mother=None, father=None, number_of_siblings=0):
+                 is_duplicate=False, alive=True, mother=None, father=None, number_of_siblings=0, marriage_info=None):
         self._identifier = identifier
         self._name = name
         self._sex = sex
@@ -19,6 +19,7 @@ class Individual:
         self._mother = mother
         self._father = father
         self._number_of_siblings = number_of_siblings
+        self._marriage_info = marriage_info
 
     @property
     def identifier(self):
@@ -112,6 +113,14 @@ class Individual:
     def number_of_siblings(self, value):
         self._number_of_siblings = value
 
+    @property
+    def marriage_info(self):
+        return self._marriage_info
+
+    @marriage_info.setter
+    def marriage_info(self, value):
+        self._marriage_info = value
+
     def fifteen_or_more_siblings(self, individuals):
         if self.child_of:
             siblings = [ind for ind in individuals.values() if
@@ -156,10 +165,64 @@ class Individual:
         if missing_fields:
             return f"ERROR: INDIVIDUAL: US23: {self.identifier}: Missing required fields {', '.join(missing_fields)}"
 
+    def add_marriage_info(self, families, individuals):
+        self._marriage_info = []
+        spouse_id = ''
+        spouse_death_date = ''
+        for spouse in self.spouse_of:
+            if families:
+                for fam_id, family in families.items():
+                    if spouse == family.identifier:
+                        if family.husband_id == self.identifier:
+                            spouse_id = family.wife_id
+                        elif family.wife_id == self.identifier:
+                            spouse_id = family.husband_id
+
+                        for indi_id, individual in individuals.items():
+                            if individual.identifier == spouse_id:
+                                spouse_death_date = individual.death_date
+
+                        self._marriage_info.append({
+                            'family_id': family.identifier,
+                            'marriage_date': family.marriage_date,
+                            'divorce_date': family.divorce_date,
+                            'spouse_id': spouse_id,
+                            'spouse_death_date': spouse_death_date
+                        })
+
+    def detect_bigamy(self):
+        marriages = self.marriage_info
+        if len(marriages) > 1:
+            marriages.sort(key=lambda x: x['marriage_date'])
+            for i in range(len(marriages) - 1):
+                if not marriages[i]['divorce_date']:
+                    if not marriages[i]['spouse_death_date']:
+                        return f"ERROR: INDIVIDUAL: US11: {self.identifier}: Bigamy has been detected. {self.name} is married to multiple individuals at the same time."
+                    elif marriages[i]['spouse_death_date'] and marriages[i + 1]['marriage_date'] < marriages[i][
+                        'spouse_death_date']:
+                        return f"ERROR: INDIVIDUAL: US11: {self.identifier}: Bigamy has been detected. {self.name} is married t0 multiple individuals at the same time."
+                elif marriages[i + 1]['marriage_date'] < marriages[i]['divorce_date']:
+                    return f"ERROR: INDIVIDUAL: US11: {self.identifier}: Bigamy has been detected. {self.name} is married to multiple individuals at the same time."
+
+    def age_at_date(self, event_date):
+        delta = 0
+        years = 0
+        event_date = datetime.strptime(event_date, "%Y-%m-%d")  # Convert event_date to datetime object
+        if self.birth_date and not isinstance(self.birth_date, datetime):
+            self.birth_date = datetime.strptime(self.birth_date, "%Y-%m-%d")
+
+        if self.birth_date:
+            delta = event_date - self.birth_date
+
+        if delta:
+            years = delta.days // 365
+
+        return years
+
 
 class Family:
     def __init__(self, identifier, husband_id, husband_name=None, wife_id=None, wife_name=None, children=None,
-                 marriage_date=None, divorce_date=None, is_duplicate=False, childrenIds=None):
+                 marriage_date=None, divorce_date=None, is_duplicate=False, childrenIds=None, husband=None, wife=None):
         self._identifier = identifier
         self._husband_id = husband_id
         self._husband_name = husband_name
@@ -170,6 +233,8 @@ class Family:
         self._divorce_date = divorce_date
         self._is_duplicate = is_duplicate
         self._childrenIds = childrenIds
+        self._husband = husband
+        self._wife = wife
 
     @property
     def identifier(self):
@@ -239,6 +304,22 @@ class Family:
     def childrenIds(self, value):
         self._childrenIds = value
 
+    @property
+    def husband(self):
+        return self._husband
+
+    @husband.setter
+    def husband(self, value):
+        self._husband = value
+
+    @property
+    def wife(self):
+        return self._wife
+
+    @wife.setter
+    def wife(self, value):
+        self._wife = value
+
     def unique_family_names(self):
 
         # todo return the reason why
@@ -284,6 +365,21 @@ class Family:
                         return "ERROR: FAMILY: US02: " + self.identifier + ": Child " + child.identifier + " was born before marriage on " + self.marriage_date
         return ""
 
+    def is_marriage_before_14(self, individuals):
+        if not self.marriage_date:
+            return None
+
+        for indi_id, individual in individuals.items():
+            if individual.identifier == self.husband_id:
+                self.husband = individual
+            elif individual.identifier == self.wife_id:
+                self.wife = individual
+
+        if self.husband and self.wife:
+            if self.husband.age_at_date(self.marriage_date) < 14 or self.wife.age_at_date(self.marriage_date) < 14:
+                return f"ERROR: FAMILY: US10: {self.identifier}: Marriage occurred before one of the spouses reached 14 years of age."
+        return None
+
 
 def set_parents_of_individuals(individuals, families):
     for ind_id, individual in individuals.items():
@@ -304,7 +400,9 @@ def set_parents_of_individuals(individuals, families):
 
 
 def is_individual_birth_date_after_parent_death_date(individual):
-    if (individual.birth_date and individual.mother and individual.mother.death_date and individual.birth_date > individual.mother.death_date) and (individual.birth_date and individual.father and individual.father.death_date and individual.birth_date > individual.father.death_date):
+    if (
+            individual.birth_date and individual.mother and individual.mother.death_date and individual.birth_date > individual.mother.death_date) and (
+            individual.birth_date and individual.father and individual.father.death_date and individual.birth_date > individual.father.death_date):
         return (f"ERROR: INDIVIDUAL: US09: {individual.identifier}: "
                 f"Birth date {individual.birth_date} is after mother's death date {individual.mother.death_date} and after father's death date {individual.father.death_date}")
     elif individual.birth_date and individual.mother and individual.mother.death_date and individual.birth_date > individual.mother.death_date:
@@ -610,3 +708,17 @@ if __name__ == '__main__':
         if fifteen_or_more_siblings_error:
             print(fifteen_or_more_siblings_error)
 
+    # Populate marriage information for each individual
+    for individual in sorted_individuals.values():
+        individual.add_marriage_info(sorted_families, sorted_individuals)
+
+    # Detect bigamy for each individual
+    for individual in sorted_individuals.values():
+        bigamy_error = individual.detect_bigamy()
+        if bigamy_error:
+            print(bigamy_error)
+
+    for family in sorted_families.values():
+        marriage_before_14_error = family.is_marriage_before_14(sorted_individuals)
+        if marriage_before_14_error:
+            print(marriage_before_14_error)
