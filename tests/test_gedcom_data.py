@@ -8,7 +8,7 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(parent_dir)
 
 import gedcom_data
-from gedcom_data import DatesBeforeCurrDate
+from gedcom_data import DatesBeforeCurrDate,check_sibling_birth_dates,check_death_and_age
 import unittest
 
 
@@ -62,8 +62,7 @@ class TestGedcomBirthBeforeMarriage(unittest.TestCase):
 
     def test_birth_before_marriage_true(self):
         family_data = self.families[0]
-        print(family_data)
-        self.assertTrue(family_data.children_before_marriage() != "")
+        self.assertTrue(family_data.children_before_marriage() !=  "")
 
     def test_birth_before_marriage_false(self):
         family_data = self.families[1]
@@ -249,6 +248,58 @@ class TestMissingRequiredFields(unittest.TestCase):
         self.assertEqual(individual_data.find_missing_required_fields(),
                          "ERROR: INDIVIDUAL: US23: @I12@: Missing required fields Sex")
 
+class TestCheckDates(unittest.TestCase):
+
+    def setUp(self):
+        self.individuals = [
+            gedcom_data.Individual("@I3@", "Jane", "F","1778-07-21", "2018-02-12", "","", 239, False,False),
+            gedcom_data.Individual("@I1@", "Patrick", "M","1996-08-23", "2019-04-10", "","", 28, False,False),
+            gedcom_data.Individual("@I2@", "Aadi", "M","1778-01-01", None, "","", 239, False,True),
+            gedcom_data.Individual("@I5@", "Jack", "M","1987-02-12", None, "","", 37, False,True),
+            gedcom_data.Individual("@I6@", "Erica", "F","2017-01-19", None, "","", 157, False,True)
+        ]
+
+    def test_check_age_at_death_above_150(self):
+
+        expected_output = 'No'
+
+        indi = self.individuals[0]
+        
+        individuals_dict = {indi.identifier: indi}
+        result = check_death_and_age(individuals_dict)
+        self.assertEqual(result, expected_output)
+
+    def test_check_age_at_death_less_150(self):
+
+        expected_output = 'Yes'
+
+        indi = self.individuals[1]
+        
+        individuals_dict = {indi.identifier: indi}
+        result = check_death_and_age(individuals_dict)
+        self.assertEqual(result, expected_output)
+
+    def test_check_age_from_birth_less_150(self):
+
+        expected_output = 'Yes'
+
+        indi = self.individuals[3]
+        
+        individuals_dict = {indi.identifier: indi}
+        result = check_death_and_age(individuals_dict)
+        self.assertEqual(result, expected_output)
+
+    def test_check_age_from_birth_above_150(self):
+
+        expected_output = 'No'
+
+        indi = self.individuals[4]
+        
+        individuals_dict = {indi.identifier: indi}
+        result = check_death_and_age(individuals_dict)
+        self.assertEqual(result, expected_output)
+
+    
 
 class TestBirthDateAfterParentDeathDate(unittest.TestCase):
 
