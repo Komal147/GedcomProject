@@ -8,7 +8,7 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(parent_dir)
 
 import gedcom_data
-from gedcom_data import DatesBeforeCurrDate,check_sibling_birth_dates,check_death_and_age
+from gedcom_data import DatesBeforeCurrDate,check_marriage_and_divorce_date,check_death_and_age,check_marriage_before_death
 import unittest
 
 
@@ -431,6 +431,98 @@ class TestFifteenOrMoreSiblings(unittest.TestCase):
         individual_data = self.individuals["@I6@"]
         individual_data.child_of = "@F3@"
         self.assertIsNone(individual_data.fifteen_or_more_siblings(self.individuals))
+
+
+class TestMarriageandDivorceDates(unittest.TestCase):
+
+    def setUp(self):
+
+        self.families = [
+                gedcom_data.Family("@F3@", "@I6@", "Erica", "@I7@","Jeffery", [],"2016-11-12", "2015-11-12", []),
+                gedcom_data.Family("@F4@", "@I8@", "Willow", "@I9@","Gavin", [],None,"2010-11-12", []),
+                gedcom_data.Family("@F5@", "@I10@", "Hannah", "@I5@","Jack", [],"2010-11-12", "2015-11-12", []),]
+
+    def test_check_marriage_after_divorce(self):
+
+        expected_output = 'No'
+
+        fam = self.families[0]
+        family_dict = {fam.identifier: fam}
+        result = check_marriage_and_divorce_date(family_dict)
+        self.assertEqual(result, expected_output)
+
+    def test_check_no_marriagedate_but_divorcedate(self):
+
+        expected_output = 'No'
+
+        fam = self.families[1]
+        family_dict = {fam.identifier: fam}
+        result = check_marriage_and_divorce_date(family_dict)
+        self.assertEqual(result, expected_output)
+
+    def test_check_marriage_before_divorced(self):
+
+        expected_output = 'Yes'
+
+        fam = self.families[2]
+        family_dict = {fam.identifier: fam}
+        result = check_marriage_and_divorce_date(family_dict)
+        self.assertEqual(result, expected_output)
+
+class TestMarriageBeforeDeath(unittest.TestCase):
+
+    def setUp(self):
+        self.individuals = [
+            gedcom_data.Individual("@I3@", "Jane", "F","1778-07-21", "2018-02-12", "","", 239, False,False),
+            gedcom_data.Individual("@I7@", "Jessica", "F","1996-08-23", "2019-04-10", "","", 28, False,False),
+            gedcom_data.Individual("@I8@", "Willow", "M","2022-01-01", None, "","", 239, False,False),
+            gedcom_data.Individual("@I5@", "Jack", "M","1987-02-12", None, "","", 37, False,True),
+            gedcom_data.Individual("@I6@", "Jeffrey", "M","2017-01-19", "2010-05-01", "","", 157, False,False)
+        ]
+
+        self.families = [
+                gedcom_data.Family("@F3@", "@I6@", "Jeffrey", "@I7@","Erica", [],"2016-11-12", "2015-11-12", []),
+                gedcom_data.Family("@F4@", "@I8@", "Willow", "@I9@","Gavin", [],None,"2010-11-12", []),
+                gedcom_data.Family("@F5@", "@I10@", "Hannah", "@I7@","Jessica", [],"2020-11-12", "2015-11-12", []),]
+
+    def test_check_marriage_before_husband_death(self):
+
+        expected_output = 'No'
+
+        indi = self.individuals[4]
+        indi_dict = {indi.identifier: indi}
+
+        fam = self.families[0]
+        family_dict = {fam.identifier: fam}
+
+        result = check_marriage_before_death(family_dict,indi_dict)
+        self.assertEqual(result, expected_output)
+
+    def test_check_marriage_before_wife_death(self):
+
+        expected_output = 'No'
+
+        indi = self.individuals[1]
+        indi_dict = {indi.identifier: indi}
+
+        fam = self.families[2]
+        family_dict = {fam.identifier: fam}
+
+        result = check_marriage_before_death(family_dict,indi_dict)
+        self.assertEqual(result, expected_output)
+
+    def test_check_marriage_after_wife_death(self):
+
+        expected_output = 'Yes'
+
+        indi = self.individuals[2]
+        indi_dict = {indi.identifier: indi}
+
+        fam = self.families[1]
+        family_dict = {fam.identifier: fam}
+
+        result = check_marriage_before_death(family_dict,indi_dict)
+        self.assertEqual(result, expected_output)
 
 
 if __name__ == '__main__':
