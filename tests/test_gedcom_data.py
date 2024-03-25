@@ -13,39 +13,40 @@ import unittest
 
 
 def initData():
-    individuals = [gedcom_data.Individual("@I1@", "Tyler", "M","1999-08-31", None, "","", 24, False,True),
-                    gedcom_data.Individual("@I2@", "John", "M","2003-12-13", None, "","", 20, False,True),
-                    gedcom_data.Individual("@I3@", "Jane", "F","1997-08-23", "2018-02-12", "","", 27, False,False),
-                    gedcom_data.Individual("@I4@", "Jill", "F","1995-05-08", None, "","", 29, False,True),
-                    gedcom_data.Individual("@I5@", "Jack", "M","1987-02-12", None, "","", 37, False,True),
-                    gedcom_data.Individual("@I6@", "Erica", "F","2017-01-19", None, "","", 7, False,True),
-                    gedcom_data.Individual("@I7@", "Jeffery", "M","1997-11-17", None, "","", 27, False,True),
-                    gedcom_data.Individual("@I8@", "Willow", "F","1999-12-27", None, "","", 24, False,True),
-                    gedcom_data.Individual("@I9@", "Gavin", "M","1993-012-26", None, "","", 31, False,True),
-                    gedcom_data.Individual("@I10@", "Hannah", "F","1977-03-22", None, "","", 47, False,False),
-                    gedcom_data.Individual("@I11@", "Jack", "M","2010-02-13", None, "","", 37, False,True),
-                    ]
-    
-    families = [gedcom_data.Family("@F1@", "@I2@", "John", "@I3@","Jane", [individuals[1], individuals[2]],"2018-11-12", None, ["@I2@", "@I3@"]),
-                gedcom_data.Family("@F2@", "@I4@", "Jill", "@I5@","Jack", [individuals[5]],"2016-12-25", None, ["@I6@"]),
-                gedcom_data.Family("@F3@", "@I6@", "Erica", "@I7@","Jeffery", [],"1999-11-12", "2015-11-12", []),
-                gedcom_data.Family("@F4@", "@I8@", "Willow", "@I9@","Gavin", [],"2010-11-12", None, []),
-                gedcom_data.Family("@F5@", "@I10@", "Hannah", "@I5@","Jack", [],"2010-11-12", "1980-11-12", []),]
+    individuals = [gedcom_data.Individual("@I1@", "Tyler", "M", "1999-08-31", None, "", "", 24, False, True),
+                   gedcom_data.Individual("@I2@", "John", "M", "2003-12-13", None, "", "", 20, False, True),
+                   gedcom_data.Individual("@I3@", "Jane", "F", "1997-08-23", "2018-02-12", "", "", 27, False, False),
+                   gedcom_data.Individual("@I4@", "Jill", "F", "1995-05-08", None, "", "", 29, False, True),
+                   gedcom_data.Individual("@I5@", "Jack", "M", "1987-02-12", None, "", "", 37, False, True),
+                   gedcom_data.Individual("@I6@", "Erica", "F", "2017-01-19", None, "", "", 7, False, True),
+                   gedcom_data.Individual("@I7@", "Jeffery", "M", "1997-11-17", None, "", "", 27, False, True),
+                   gedcom_data.Individual("@I8@", "Willow", "F", "1999-12-27", None, "", "", 24, False, True),
+                   gedcom_data.Individual("@I9@", "Gavin", "M", "1993-012-26", None, "", "", 31, False, True),
+                   gedcom_data.Individual("@I10@", "Hannah", "F", "1977-03-22", None, "", "", 47, False, False),
+                   gedcom_data.Individual("@I11@", "Jack", "M", "2010-02-13", None, "", "", 37, False, True),
+                   ]
 
+    families = [
+        gedcom_data.Family("@F1@", "@I2@", "John", "@I3@", "Jane", [individuals[1], individuals[2]], "2018-11-12", None,
+                           ["@I2@", "@I3@"]),
+        gedcom_data.Family("@F2@", "@I4@", "Jill", "@I5@", "Jack", [individuals[5]], "2016-12-25", None, ["@I6@"]),
+        gedcom_data.Family("@F3@", "@I6@", "Erica", "@I7@", "Jeffery", [], "1999-11-12", "2015-11-12", []),
+        gedcom_data.Family("@F4@", "@I8@", "Willow", "@I9@", "Gavin", [], "2010-11-12", None, []),
+        gedcom_data.Family("@F5@", "@I10@", "Hannah", "@I5@", "Jack", [], "2010-11-12", "1980-11-12", []), ]
 
     return families, individuals
 
+
 class TestGedcomFamilyUniqueFamilyNames(unittest.TestCase):
 
-    def setUp(self) : 
+    def setUp(self):
         self.families, self.individuals = initData()
-    
+
     def test_unique_family_names_true(self):
         family_data = self.families[0]
         self.assertTrue(family_data.unique_family_names() != "")
 
     def test_unique_family_names_false(self):
-
         family_data = self.families[1]
         self.assertEqual(family_data.unique_family_names(), "")
 
@@ -56,15 +57,14 @@ class TestGedcomFamilyUniqueFamilyNames(unittest.TestCase):
 
 class TestGedcomBirthBeforeMarriage(unittest.TestCase):
 
-    def setUp(self) : 
+    def setUp(self):
         self.families, self.individuals = initData()
-    
+
     def test_birth_before_marriage_true(self):
         family_data = self.families[0]
         self.assertTrue(family_data.children_before_marriage() !=  "")
 
     def test_birth_before_marriage_false(self):
-
         family_data = self.families[1]
         self.assertEqual(family_data.children_before_marriage(), "")
 
@@ -73,7 +73,6 @@ class TestGedcomBirthBeforeMarriage(unittest.TestCase):
         self.assertEqual(family_data.children_before_marriage(), "")
 
     def test_birth_before_marriage_none_date(self):
-
         family_data = self.families[3]
         self.assertEqual(family_data.children_before_marriage(), "")
 
@@ -84,11 +83,11 @@ class TestGedcomBirthBeforeMarriage(unittest.TestCase):
 
 class TestGedcomDatesBeforeCurrDate(unittest.TestCase):
 
-    def setUp(self) : 
+    def setUp(self):
         self.families, self.individuals = initData()
 
     def test_dates_before_curr_date_true(self):
-    # Test case where all dates are before the current date
+        # Test case where all dates are before the current date
 
         expected_output = 'Yes'
 
@@ -102,7 +101,7 @@ class TestGedcomDatesBeforeCurrDate(unittest.TestCase):
         self.assertEqual(result, expected_output)
 
     def test_dates_before_curr_date_birthdate_false(self):
-    # Test case where birthdate are after the current date
+        # Test case where birthdate are after the current date
 
         expected_output = 'No'
 
@@ -117,7 +116,7 @@ class TestGedcomDatesBeforeCurrDate(unittest.TestCase):
         self.assertEqual(result, expected_output)
 
     def test_dates_before_curr_date_deathdate_false(self):
-    # Test case where death date are after the current date
+        # Test case where death date are after the current date
 
         expected_output = 'No'
 
@@ -132,7 +131,7 @@ class TestGedcomDatesBeforeCurrDate(unittest.TestCase):
         self.assertEqual(result, expected_output)
 
     def test_dates_before_curr_date_marriagedate_false(self):
-    # Test case where marriage date are after the current date
+        # Test case where marriage date are after the current date
 
         expected_output = 'No'
 
@@ -140,14 +139,14 @@ class TestGedcomDatesBeforeCurrDate(unittest.TestCase):
         individuals_dict = {indi.identifier: indi}
 
         fam = self.families[0]
-        fam.marriage_date='2030-10-12'
+        fam.marriage_date = '2030-10-12'
         families_dict = {fam.identifier: fam}
 
         result = DatesBeforeCurrDate(individuals_dict, families_dict)
         self.assertEqual(result, expected_output)
 
     def test_dates_before_curr_date_divorcedate_false(self):
-    # Test case where divorce date are after the current date
+        # Test case where divorce date are after the current date
 
         expected_output = 'No'
 
@@ -155,13 +154,13 @@ class TestGedcomDatesBeforeCurrDate(unittest.TestCase):
         individuals_dict = {indi.identifier: indi}
 
         fam = self.families[1]
-        fam.divorce_date='2032-11-08'
+        fam.divorce_date = '2032-11-08'
         families_dict = {fam.identifier: fam}
 
         result = DatesBeforeCurrDate(individuals_dict, families_dict)
         self.assertEqual(result, expected_output)
 
-        
+
 class TestBirthBeforeDeath(unittest.TestCase):
 
     def setUp(self):
@@ -432,6 +431,93 @@ class TestFifteenOrMoreSiblings(unittest.TestCase):
         individual_data.child_of = "@F3@"
         self.assertIsNone(individual_data.fifteen_or_more_siblings(self.individuals))
 
+
+class TestDetectBigamy(unittest.TestCase):
+
+    def setUp(self):
+        # Set up sample data for testing
+        self.marriage_info_no_marriage = []
+        self.marriage_info_single_marriage = [
+            {'marriage_date': '2000-01-01', 'divorce_date': None, 'spouse_death_date': None}]
+        self.marriage_info_multiple_marriages_no_conflict = [
+            {'marriage_date': '2000-01-01', 'divorce_date': '2010-01-01', 'spouse_death_date': None},
+            {'marriage_date': '2015-01-01', 'divorce_date': None, 'spouse_death_date': None}
+        ]
+        self.marriage_info_bigamy_overlapping_dates = [
+            {'marriage_date': '2000-01-01', 'divorce_date': None, 'spouse_death_date': None},
+            {'marriage_date': '1999-01-01', 'divorce_date': None, 'spouse_death_date': None}
+        ]
+        self.marriage_info_bigamy_concurrent_marriage_divorce = [
+            {'marriage_date': '2000-01-01', 'divorce_date': '2005-01-01', 'spouse_death_date': None},
+            {'marriage_date': '2003-01-01', 'divorce_date': None, 'spouse_death_date': None}
+        ]
+
+    def test_detect_bigamy_no_marriages(self):
+        # Test case where individual has no marriages
+        individual = gedcom_data.Individual("@I1@", "John", "M", "1990-01-01")
+        individual.marriage_info = self.marriage_info_no_marriage
+        self.assertIsNone(individual.detect_bigamy())
+
+    def test_detect_bigamy_single_marriage(self):
+        # Test case where individual has only one marriage
+        individual = gedcom_data.Individual("@I1@", "John", "M", "1990-01-01")
+        individual.marriage_info = self.marriage_info_single_marriage
+        self.assertIsNone(individual.detect_bigamy())
+
+    def test_detect_bigamy_multiple_marriages_no_conflict(self):
+        # Test case where individual has multiple marriages with no conflict
+        individual = gedcom_data.Individual("@I1@", "John", "M", "1990-01-01")
+        individual.marriage_info = self.marriage_info_multiple_marriages_no_conflict
+        self.assertIsNone(individual.detect_bigamy())
+
+    def test_detect_bigamy_bigamy_overlapping_dates(self):
+        # Test case where individual has bigamy with overlapping marriage dates
+        individual = gedcom_data.Individual("@I1@", "John", "M", "1990-01-01")
+        individual.marriage_info = self.marriage_info_bigamy_overlapping_dates
+        expected_error = "ERROR: INDIVIDUAL: US11: @I1@: Bigamy has been detected. John is married to multiple individuals at the same time."
+        self.assertEqual(individual.detect_bigamy(), expected_error)
+
+    def test_detect_bigamy_bigamy_concurrent_marriage_divorce(self):
+        # Test case where individual has bigamy with concurrent marriage and divorce dates
+        individual = gedcom_data.Individual("@I1@", "John", "M", "1990-01-01")
+        individual.marriage_info = self.marriage_info_bigamy_concurrent_marriage_divorce
+        expected_error = "ERROR: INDIVIDUAL: US11: @I1@: Bigamy has been detected. John is married to multiple individuals at the same time."
+        self.assertEqual(individual.detect_bigamy(), expected_error)
+
+
+class TestMarriageBefore14(unittest.TestCase):
+
+    def setUp(self):
+        self.husband = gedcom_data.Individual("@I1@", "John", "M", "2000-01-01")
+        self.wife = gedcom_data.Individual("@I2@", "Jane", "F", "2002-02-02")
+        self.family = gedcom_data.Family("@F1@", "@I1@", "John", "@I2@", "Jane", marriage_date="2016-05-20")
+
+    def test_marriage_before_14_true(self):
+        self.husband.age_at_date = lambda x: 13  # Mocking the age of husband to be less than 14
+        self.wife.age_at_date = lambda x: 15  # Mocking the age of wife to be greater than 14
+        individuals = {"@I1@": self.husband, "@I2@": self.wife}
+        result = self.family.is_marriage_before_14(individuals)
+        self.assertEqual(result,
+                         "ERROR: FAMILY: US10: @F1@: Marriage occurred before one of the spouses reached 14 years of age.")
+
+    def test_marriage_before_14_false(self):
+        self.husband.age_at_date = lambda x: 16  # Mocking the age of husband to be greater than 14
+        self.wife.age_at_date = lambda x: 15  # Mocking the age of wife to be greater than 14
+        individuals = {"@I1@": self.husband, "@I2@": self.wife}
+        result = self.family.is_marriage_before_14(individuals)
+        self.assertIsNone(result)
+
+    def test_marriage_before_14_no_marriage_date(self):
+        self.family.marriage_date = None
+        individuals = {"@I1@": self.husband, "@I2@": self.wife}
+        result = self.family.is_marriage_before_14(individuals)
+        self.assertIsNone(result)
+
+    def test_marriage_before_14_missing_spouse(self):
+        individuals = {"@I1@": self.husband}  # Missing wife in the individuals dictionary
+        result = self.family.is_marriage_before_14(individuals)
+        self.assertIsNone(result)
+       
 
 class TestMarriageandDivorceDates(unittest.TestCase):
 
