@@ -320,6 +320,16 @@ class Family:
     def wife(self, value):
         self._wife = value
 
+
+    def parentsTooOld(self, individual):
+            
+            if (self.wife != None and self.wife.birth_date - individual.birth_date > 60) or (self.husband != None and self.husband.birth_date - individual.birth_date > 80):
+             return (f"ERROR: FAMILY: US12: {individual.identifier}: "
+                        f"One of the parents is too old compared to the child")
+            
+            return ""
+       
+
     def unique_family_names(self):
 
         # todo return the reason why
@@ -734,6 +744,7 @@ if __name__ == '__main__':
     individuals_data, families_data, duplicate_individual, duplicate_family = parse_gedcom(gedcom_file_path)
 
     sorted_individuals = dict(sorted(individuals_data.items(), key=lambda x: extract_numeric_part(x[0])))
+
     sorted_families = dict(sorted(families_data.items(), key=lambda x: extract_numeric_part(x[0])))
 
     indi_table = PrettyTable(
@@ -754,6 +765,8 @@ if __name__ == '__main__':
     fam_table = PrettyTable(
         ["Family ID", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children", "Marriage Date",
          "Divorce Date"])
+    
+
     for fam_id, fam_data in sorted_families.items():
         if (fam_data.unique_family_names() != ""):
             fam_errors.append(fam_data.unique_family_names())
@@ -764,6 +777,11 @@ if __name__ == '__main__':
             fam_table.add_row(
                 [fam_id, fam_data.husband_id, fam_data.husband_name, fam_data.wife_id, fam_data.wife_name, children_str,
                  fam_data.marriage_date, fam_data.divorce_date])
+        
+        for child_id in fam_data.childrenIds:
+            child = sorted_individuals[child_id]
+            if fam_data.parentsTooOld(child) != "":
+                fam_errors.append(fam_data.parentsTooOld(child))
 
     print("\nFamilies:")
     print(fam_table)
