@@ -321,6 +321,16 @@ class Family:
         self._wife = value
 
 
+    def divorceBeforeDeath(self) : 
+        if(self.divorce_date != None ) :
+            if(self.husband != None and self.husband.death_date != None and self.divorce_date > self.husband.death_date) :
+                return (f"ERROR: FAMILY: US06: {self.identifier}: "
+                        f"Divorce date {self.divorce_date} is after husband's death date {self.husband.death_date}")
+            if(self.wife != None and self.wife.death_date != None and self.divorce_date > self.wife.death_date) :
+                return (f"ERROR: FAMILY: US06: {self.identifier}: "
+                        f"Divorce date {self.divorce_date} is after wife's death date {self.wife.death_date}")
+        return ""
+
     def parentsTooOld(self, individual):
             
             if (self.wife != None and self.wife.birth_date - individual.birth_date > 60) or (self.husband != None and self.husband.birth_date - individual.birth_date > 80):
@@ -772,6 +782,8 @@ if __name__ == '__main__':
             fam_errors.append(fam_data.unique_family_names())
         elif fam_data.children_before_marriage() != "":
             fam_errors.append(fam_data.children_before_marriage())
+        elif fam_data.divorceBeforeDeath() != "":
+            fam_errors.append(fam_data.divorceBeforeDeath())
         else:
             children_str = ", ".join(fam_data.childrenIds) if fam_data.childrenIds else 'NA'
             fam_table.add_row(
