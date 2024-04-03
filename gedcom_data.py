@@ -5,7 +5,8 @@ import sys
 
 class Individual:
     def __init__(self, identifier, name, sex, birth_date, death_date=None, child_of=None, spouse_of=None, age=None,
-                 is_duplicate=False, alive=True, mother=None, father=None, number_of_siblings=0, marriage_info=None):
+                 is_duplicate=False, alive=True, mother=None, father=None, number_of_siblings=0, marriage_info=None,
+                 children=None, descendants=None):
         self._identifier = identifier
         self._name = name
         self._sex = sex
@@ -20,6 +21,8 @@ class Individual:
         self._father = father
         self._number_of_siblings = number_of_siblings
         self._marriage_info = marriage_info
+        self._children = children
+        self._descendants = descendants
 
     @property
     def identifier(self):
@@ -121,6 +124,22 @@ class Individual:
     def marriage_info(self, value):
         self._marriage_info = value
 
+    @property
+    def children(self):
+        return self._children
+
+    @children.setter
+    def children(self, value):
+        self._children = value
+
+    @property
+    def descendants(self):
+        return self._descendants
+
+    @descendants.setter
+    def descendants(self, value):
+        self._descendants = value
+
     def fifteen_or_more_siblings(self, individuals):
         if self.child_of:
             siblings = [ind for ind in individuals.values() if
@@ -218,6 +237,46 @@ class Individual:
             years = delta.days // 365
 
         return years
+
+    def add_children(self, families):
+        self.children = []
+        for spouse_of_id in self.spouse_of:
+            for fam_id, family in families.items():
+                if fam_id == spouse_of_id:
+                    for child in family.children:
+                        self.children.append(child)
+
+    def add_descendants(self, individuals):
+        self.descendants = []
+        visited = set()
+
+        def dfs(current_individual):
+            if current_individual.identifier in visited:
+                return
+            visited.add(current_individual.identifier)
+            if current_individual.children:
+                for child in current_individual.children:
+                    child = individuals.get(child.identifier)
+                    if child:
+                        self.descendants.append(child)
+                        dfs(child)
+
+        dfs(self)
+
+    def married_to_descendants(self, families):
+        for descendant in self.descendants:
+            for spouse_of_id in self.spouse_of:
+                for fam_id, family in families.items():
+                    if spouse_of_id == fam_id:
+                        if family.husband_id == descendant.identifier or family.wife_id == descendant.identifier:
+                            return "ERROR: INDIVIDUAL: US17: " + self.identifier + ": " + self.name + " is married to descendant " + descendant.name + " in family " + family.identifier
+
+    def alive_and_married(self):
+        if self.alive:
+            for marriage in self.marriage_info:
+                if (not marriage['divorce_date']) and (not marriage['spouse_death_date']):
+                    return "ERROR: INDIVIDUAL: US30: " + self.identifier + ": " + self.name + " is alive and married."
+
 
 
 class Family:
@@ -584,7 +643,7 @@ def DatesBeforeCurrDate(individuals, families):
         return 'Yes'
     else:
         return 'No'
-    
+
 
 def check_death_and_age(individuals):
     bad_date_list = []
@@ -598,19 +657,22 @@ def check_death_and_age(individuals):
                     (death_date_obj.month, death_date_obj.day) < (birth_date_obj.month, birth_date_obj.day))
             if age_at_death is not None and age_at_death > 150:
                 bad_date_list.append(age_at_death)
-                print(f"ERROR: INDIVIDUAL: US07: {extract_numeric_part(indi_id)}: Age at death is: {age_at_death} greater than 150 years.")
+                print(
+                    f"ERROR: INDIVIDUAL: US07: {extract_numeric_part(indi_id)}: Age at death is: {age_at_death} greater than 150 years.")
 
         if indi_data.alive and indi_data.birth_date is not None:
             if indi_data.age is not None and indi_data.age > 150:
                 bad_age.append(indi_data.age)
-                print(f"ERROR: INDIVIDUAL: US07: {extract_numeric_part(indi_id)}: Age from birth is: {indi_data.age} greater than 150 years.")
+                print(
+                    f"ERROR: INDIVIDUAL: US07: {extract_numeric_part(indi_id)}: Age from birth is: {indi_data.age} greater than 150 years.")
 
     if not bad_date_list and not bad_age:  # Corrected conditional logic
         print("US07: Age is less than 150 years")
         return 'Yes'
     else:
         return 'No'
-    
+
+
 def check_marriage_and_divorce_date(sorted_families):
     errors = []
 
@@ -624,7 +686,8 @@ def check_marriage_and_divorce_date(sorted_families):
                 print(f"ERROR: FAMILY: US04: {extract_numeric_part(fam_id)} : Divorce occurs before marriage")
         elif marriage_date is None and divorce_date is not None:
             errors.append(marriage_date)
-            print(f"ERROR: FAMILY: US04: {extract_numeric_part(fam_id)}: Divorce date specified but marriage date is missing")
+            print(
+                f"ERROR: FAMILY: US04: {extract_numeric_part(fam_id)}: Divorce date specified but marriage date is missing")
 
     if not errors:
         print(f"US04: {extract_numeric_part(fam_id)} : Marriage occure before divorce")
@@ -646,19 +709,20 @@ def check_marriage_before_death(sorted_families, sorted_individuals):
                 husband_death_date = sorted_individuals[husband_id].death_date
                 if husband_death_date is not None and marriage_date > husband_death_date:
                     errors.append(husband_death_date)
-                    print(f"ERROR: FAMILY: US05: {extract_numeric_part(fam_id)}: Marriage occurs after husband's death. ID: {husband_id} Death date:{husband_death_date}")
+                    print(
+                        f"ERROR: FAMILY: US05: {extract_numeric_part(fam_id)}: Marriage occurs after husband's death. ID: {husband_id} Death date:{husband_death_date}")
 
             if wife_id in sorted_individuals:
                 wife_death_date = sorted_individuals[wife_id].death_date
                 if wife_death_date is not None and marriage_date > wife_death_date:
                     errors.append(wife_death_date)
-                    print(f"ERROR: FAMILY: US05: {extract_numeric_part(fam_id)}: Marriage occurs after wife's death. ID: {wife_id} Death date:{wife_death_date}")
+                    print(
+                        f"ERROR: FAMILY: US05: {extract_numeric_part(fam_id)}: Marriage occurs after wife's death. ID: {wife_id} Death date:{wife_death_date}")
     if not errors:
         print(f"US05: {extract_numeric_part(fam_id)}: Marriage occure before death of spouse")
         return 'Yes'
     else:
         return 'No'
-
 
 
 def check_sibling_birth_dates(individuals, families):
@@ -674,9 +738,9 @@ def check_sibling_birth_dates(individuals, families):
 
     for birth_date, sibling_ids in sibling_birth_dates.items():
         if len(sibling_ids) >= 5:
-            print(f"ERROR: FAMILY: US15: More than five siblings born on the same date ({birth_date}): {', '.join(sibling_ids)}")
+            print(
+                f"ERROR: FAMILY: US15: More than five siblings born on the same date ({birth_date}): {', '.join(sibling_ids)}")
 
-            
 
 def parse_gedcom(file_path):
     individuals = {}
@@ -725,11 +789,12 @@ def parse_gedcom(file_path):
 
 if __name__ == '__main__':
     # Check if the user provided a command line argument for the GEDCOM file path
-    if len(sys.argv) < 2:
-        print("Error: Please provide the GEDCOM file path as a command line argument.")
-        sys.exit(1)
+    # if len(sys.argv) < 2:
+    #   print("Error: Please provide the GEDCOM file path as a command line argument.")
+    #  sys.exit(1)
 
-    gedcom_file_path = sys.argv[1]
+    # gedcom_file_path = sys.argv[1]
+    gedcom_file_path = 'Family-Tree.ged'
 
     individuals_data, families_data, duplicate_individual, duplicate_family = parse_gedcom(gedcom_file_path)
 
@@ -784,7 +849,6 @@ if __name__ == '__main__':
     check_marriage_and_divorce_date(sorted_families)
     check_marriage_before_death(sorted_families, sorted_individuals)
 
-
     fam_errors.sort()
     print()
     for err in fam_errors:
@@ -818,3 +882,17 @@ if __name__ == '__main__':
         marriage_before_14_error = family.is_marriage_before_14(sorted_individuals)
         if marriage_before_14_error:
             print(marriage_before_14_error)
+
+    for individual in sorted_individuals.values():
+        individual.add_children(sorted_families)
+
+    for individual in sorted_individuals.values():
+        individual.add_descendants(sorted_individuals)
+
+    for individual in sorted_individuals.values():
+        married_to_descendant_error = individual.married_to_descendants(sorted_families)
+        if married_to_descendant_error:
+            print(married_to_descendant_error)
+        alive_and_married_error = individual.alive_and_married()
+        if alive_and_married_error:
+            print(alive_and_married_error)
