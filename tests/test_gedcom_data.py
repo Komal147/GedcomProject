@@ -8,7 +8,9 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(parent_dir)
 
 import gedcom_data
-from gedcom_data import DatesBeforeCurrDate,check_marriage_and_divorce_date,check_death_and_age,check_marriage_before_death,list_living_single_individuals,check_sibling_marriages
+from gedcom_data import DatesBeforeCurrDate, check_marriage_and_divorce_date, check_death_and_age, \
+    check_marriage_before_death
+
 import unittest
 
 
@@ -62,7 +64,7 @@ class TestGedcomBirthBeforeMarriage(unittest.TestCase):
 
     def test_birth_before_marriage_true(self):
         family_data = self.families[0]
-        self.assertTrue(family_data.children_before_marriage() !=  "")
+        self.assertTrue(family_data.children_before_marriage() != "")
 
     def test_birth_before_marriage_false(self):
         family_data = self.families[1]
@@ -248,58 +250,54 @@ class TestMissingRequiredFields(unittest.TestCase):
         self.assertEqual(individual_data.find_missing_required_fields(),
                          "ERROR: INDIVIDUAL: US23: @I12@: Missing required fields Sex")
 
+
 class TestCheckDates(unittest.TestCase):
 
     def setUp(self):
         self.individuals = [
-            gedcom_data.Individual("@I3@", "Jane", "F","1778-07-21", "2018-02-12", "","", 239, False,False),
-            gedcom_data.Individual("@I1@", "Patrick", "M","1996-08-23", "2019-04-10", "","", 28, False,False),
-            gedcom_data.Individual("@I2@", "Aadi", "M","1778-01-01", None, "","", 239, False,True),
-            gedcom_data.Individual("@I5@", "Jack", "M","1987-02-12", None, "","", 37, False,True),
-            gedcom_data.Individual("@I6@", "Erica", "F","2017-01-19", None, "","", 157, False,True)
+            gedcom_data.Individual("@I3@", "Jane", "F", "1778-07-21", "2018-02-12", "", "", 239, False, False),
+            gedcom_data.Individual("@I1@", "Patrick", "M", "1996-08-23", "2019-04-10", "", "", 28, False, False),
+            gedcom_data.Individual("@I2@", "Aadi", "M", "1778-01-01", None, "", "", 239, False, True),
+            gedcom_data.Individual("@I5@", "Jack", "M", "1987-02-12", None, "", "", 37, False, True),
+            gedcom_data.Individual("@I6@", "Erica", "F", "2017-01-19", None, "", "", 157, False, True)
         ]
 
     def test_check_age_at_death_above_150(self):
-
         expected_output = 'No'
 
         indi = self.individuals[0]
-        
+
         individuals_dict = {indi.identifier: indi}
         result = check_death_and_age(individuals_dict)
         self.assertEqual(result, expected_output)
 
     def test_check_age_at_death_less_150(self):
-
         expected_output = 'Yes'
 
         indi = self.individuals[1]
-        
+
         individuals_dict = {indi.identifier: indi}
         result = check_death_and_age(individuals_dict)
         self.assertEqual(result, expected_output)
 
     def test_check_age_from_birth_less_150(self):
-
         expected_output = 'Yes'
 
         indi = self.individuals[3]
-        
+
         individuals_dict = {indi.identifier: indi}
         result = check_death_and_age(individuals_dict)
         self.assertEqual(result, expected_output)
 
     def test_check_age_from_birth_above_150(self):
-
         expected_output = 'No'
 
         indi = self.individuals[4]
-        
+
         individuals_dict = {indi.identifier: indi}
         result = check_death_and_age(individuals_dict)
         self.assertEqual(result, expected_output)
 
-    
 
 class TestBirthDateAfterParentDeathDate(unittest.TestCase):
 
@@ -517,19 +515,17 @@ class TestMarriageBefore14(unittest.TestCase):
         individuals = {"@I1@": self.husband}  # Missing wife in the individuals dictionary
         result = self.family.is_marriage_before_14(individuals)
         self.assertIsNone(result)
-       
+
 
 class TestMarriageandDivorceDates(unittest.TestCase):
 
     def setUp(self):
-
         self.families = [
-                gedcom_data.Family("@F3@", "@I6@", "Erica", "@I7@","Jeffery", [],"2016-11-12", "2015-11-12", []),
-                gedcom_data.Family("@F4@", "@I8@", "Willow", "@I9@","Gavin", [],None,"2010-11-12", []),
-                gedcom_data.Family("@F5@", "@I10@", "Hannah", "@I5@","Jack", [],"2010-11-12", "2015-11-12", []),]
+            gedcom_data.Family("@F3@", "@I6@", "Erica", "@I7@", "Jeffery", [], "2016-11-12", "2015-11-12", []),
+            gedcom_data.Family("@F4@", "@I8@", "Willow", "@I9@", "Gavin", [], None, "2010-11-12", []),
+            gedcom_data.Family("@F5@", "@I10@", "Hannah", "@I5@", "Jack", [], "2010-11-12", "2015-11-12", []), ]
 
     def test_check_marriage_after_divorce(self):
-
         expected_output = 'No'
 
         fam = self.families[0]
@@ -538,7 +534,6 @@ class TestMarriageandDivorceDates(unittest.TestCase):
         self.assertEqual(result, expected_output)
 
     def test_check_no_marriagedate_but_divorcedate(self):
-
         expected_output = 'No'
 
         fam = self.families[1]
@@ -547,7 +542,6 @@ class TestMarriageandDivorceDates(unittest.TestCase):
         self.assertEqual(result, expected_output)
 
     def test_check_marriage_before_divorced(self):
-
         expected_output = 'Yes'
 
         fam = self.families[2]
@@ -555,24 +549,24 @@ class TestMarriageandDivorceDates(unittest.TestCase):
         result = check_marriage_and_divorce_date(family_dict)
         self.assertEqual(result, expected_output)
 
+
 class TestMarriageBeforeDeath(unittest.TestCase):
 
     def setUp(self):
         self.individuals = [
-            gedcom_data.Individual("@I3@", "Jane", "F","1778-07-21", "2018-02-12", "","", 239, False,False),
-            gedcom_data.Individual("@I7@", "Jessica", "F","1996-08-23", "2019-04-10", "","", 28, False,False),
-            gedcom_data.Individual("@I8@", "Willow", "M","2022-01-01", None, "","", 239, False,False),
-            gedcom_data.Individual("@I5@", "Jack", "M","1987-02-12", None, "","", 37, False,True),
-            gedcom_data.Individual("@I6@", "Jeffrey", "M","2017-01-19", "2010-05-01", "","", 157, False,False)
+            gedcom_data.Individual("@I3@", "Jane", "F", "1778-07-21", "2018-02-12", "", "", 239, False, False),
+            gedcom_data.Individual("@I7@", "Jessica", "F", "1996-08-23", "2019-04-10", "", "", 28, False, False),
+            gedcom_data.Individual("@I8@", "Willow", "M", "2022-01-01", None, "", "", 239, False, False),
+            gedcom_data.Individual("@I5@", "Jack", "M", "1987-02-12", None, "", "", 37, False, True),
+            gedcom_data.Individual("@I6@", "Jeffrey", "M", "2017-01-19", "2010-05-01", "", "", 157, False, False)
         ]
 
         self.families = [
-                gedcom_data.Family("@F3@", "@I6@", "Jeffrey", "@I7@","Erica", [],"2016-11-12", "2015-11-12", []),
-                gedcom_data.Family("@F4@", "@I8@", "Willow", "@I9@","Gavin", [],None,"2010-11-12", []),
-                gedcom_data.Family("@F5@", "@I10@", "Hannah", "@I7@","Jessica", [],"2020-11-12", "2015-11-12", []),]
+            gedcom_data.Family("@F3@", "@I6@", "Jeffrey", "@I7@", "Erica", [], "2016-11-12", "2015-11-12", []),
+            gedcom_data.Family("@F4@", "@I8@", "Willow", "@I9@", "Gavin", [], None, "2010-11-12", []),
+            gedcom_data.Family("@F5@", "@I10@", "Hannah", "@I7@", "Jessica", [], "2020-11-12", "2015-11-12", []), ]
 
     def test_check_marriage_before_husband_death(self):
-
         expected_output = 'No'
 
         indi = self.individuals[4]
@@ -581,11 +575,10 @@ class TestMarriageBeforeDeath(unittest.TestCase):
         fam = self.families[0]
         family_dict = {fam.identifier: fam}
 
-        result = check_marriage_before_death(family_dict,indi_dict)
+        result = check_marriage_before_death(family_dict, indi_dict)
         self.assertEqual(result, expected_output)
 
     def test_check_marriage_before_wife_death(self):
-
         expected_output = 'No'
 
         indi = self.individuals[1]
@@ -594,11 +587,10 @@ class TestMarriageBeforeDeath(unittest.TestCase):
         fam = self.families[2]
         family_dict = {fam.identifier: fam}
 
-        result = check_marriage_before_death(family_dict,indi_dict)
+        result = check_marriage_before_death(family_dict, indi_dict)
         self.assertEqual(result, expected_output)
 
     def test_check_marriage_after_wife_death(self):
-
         expected_output = 'Yes'
 
         indi = self.individuals[2]
@@ -607,8 +599,85 @@ class TestMarriageBeforeDeath(unittest.TestCase):
         fam = self.families[1]
         family_dict = {fam.identifier: fam}
 
-        result = check_marriage_before_death(family_dict,indi_dict)
+        result = check_marriage_before_death(family_dict, indi_dict)
         self.assertEqual(result, expected_output)
+
+
+class TestMarriedToDescendants(unittest.TestCase):
+
+    def setUp(self):
+        self.individual = gedcom_data.Individual("@I1@", "John Doe", "M", "1990-01-01")
+        self.descendant = gedcom_data.Individual("@I2@", "Jane Doe", "F", "2010-01-01")
+        self.descendant2 = gedcom_data.Individual("@I3@", "Jack Doe", "M", "2012-01-01")
+
+        self.individual.descendants = [self.descendant, self.descendant2]
+        self.individual.spouse_of = ["@F1@", "@F2@"]
+
+        self.family1 = gedcom_data.Family("@F1@", "@I1@", "@I6@")
+        self.family2 = gedcom_data.Family("@F2@", "@I1@", "@I7@")
+
+        self.families = {
+            "@F1@": self.family1,
+            "@F2@": self.family2
+        }
+
+    def test_married_to_descendants_no_descendants(self):
+        self.individual.descendants = []
+        self.assertIsNone(self.individual.married_to_descendants(self.families))
+
+    def test_married_to_descendants_descendant_married(self):
+        self.family1.husband_id = "@I1@"
+        self.family1.wife_id = "@I2@"
+        self.assertEqual(self.individual.married_to_descendants(self.families),
+                         "ERROR: INDIVIDUAL: US17: @I1@: John Doe is married to descendant Jane Doe in family @F1@")
+
+    def test_married_to_descendants_multiple_descendants(self):
+        self.family1.husband_id = "@I1@"
+        self.family1.wife_id = "@I2@"
+        self.assertEqual(self.individual.married_to_descendants(self.families),
+                         "ERROR: INDIVIDUAL: US17: @I1@: John Doe is married to descendant Jane Doe in family @F1@")
+
+    def test_married_to_descendants_no_families(self):
+        self.assertIsNone(self.individual.married_to_descendants({}))
+
+
+class TestAliveAndMarried(unittest.TestCase):
+
+    def setUp(self):
+        self.individuals = [
+            gedcom_data.Individual("@I1@", "John Doe", "M", "1990-01-01", alive=True, marriage_info=[
+                {"family_id": "@F1@", "marriage_date": "2010-05-20", "divorce_date": None, "spouse_id": "@I2@",
+                 "spouse_death_date": None}
+            ]),
+            gedcom_data.Individual("@I2@", "Jane Doe", "F", "1992-03-15", alive=False, marriage_info=[
+                {"family_id": "@F2@", "marriage_date": "2015-12-10", "divorce_date": None, "spouse_id": "@I3@",
+                 "spouse_death_date": None}
+            ]),
+            gedcom_data.Individual("@I3@", "Alice Smith", "F", "1985-07-20", alive=True, marriage_info=[
+                {"family_id": "@F2@", "marriage_date": "2015-12-10", "divorce_date": "2018-12-10", "spouse_id": "@I1@",
+                 "spouse_death_date": None}
+            ]),
+            gedcom_data.Individual("@I4@", "Bob Johnson", "M", "1978-11-10", alive=False, marriage_info=[
+                {"family_id": "@F2@", "marriage_date": "2015-12-10", "divorce_date": None, "spouse_id": "@I1@",
+                 "spouse_death_date": "2018-12-10"}]),
+            gedcom_data.Individual("@I4@", "Bob Johnson", "M", "1978-11-10", alive=False, marriage_info=[])
+        ]
+
+    def test_alive_and_married_alive_married(self):
+        result = self.individuals[0].alive_and_married()
+        self.assertEqual(result, "ERROR: INDIVIDUAL: US30: @I1@: John Doe is alive and married.")
+
+    def test_alive_and_married_not_alive(self):
+        result = self.individuals[1].alive_and_married()
+        self.assertIsNone(result)
+
+    def test_alive_and_married_alive_single_divorced(self):
+        result = self.individuals[2].alive_and_married()
+        self.assertIsNone(result)
+
+    def test_alive_and_married_dead_single_never_married(self):
+        result = self.individuals[4].alive_and_married()
+        self.assertIsNone(result)
 
 
 class TestLivingSingleIndividual(unittest.TestCase):
