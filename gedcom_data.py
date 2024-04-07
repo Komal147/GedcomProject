@@ -379,6 +379,26 @@ class Family:
     def wife(self, value):
         self._wife = value
 
+
+    def divorceBeforeDeath(self) : 
+        if(self.divorce_date != None ) :
+            if(self.husband != None and self.husband.death_date != None and self.divorce_date > self.husband.death_date) :
+                return (f"ERROR: FAMILY: US06: {self.identifier}: "
+                        f"Divorce date {self.divorce_date} is after husband's death date {self.husband.death_date}")
+            if(self.wife != None and self.wife.death_date != None and self.divorce_date > self.wife.death_date) :
+                return (f"ERROR: FAMILY: US06: {self.identifier}: "
+                        f"Divorce date {self.divorce_date} is after wife's death date {self.wife.death_date}")
+        return ""
+
+    def parentsTooOld(self, individual):
+            
+            if (self.wife != None and self.wife.birth_date - individual.birth_date > 60) or (self.husband != None and self.husband.birth_date - individual.birth_date > 80):
+             return (f"ERROR: FAMILY: US12: {individual.identifier}: "
+                        f"One of the parents is too old compared to the child")
+            
+            return ""
+       
+
     def unique_family_names(self):
 
         # todo return the reason why
@@ -723,7 +743,43 @@ def check_marriage_before_death(sorted_families, sorted_individuals):
         return 'Yes'
     else:
         return 'No'
+    
 
+def list_living_single_individuals(sorted_individuals):
+
+    single_list = []
+
+    for indi_id, indi_data in sorted_individuals.items():
+        if indi_data.alive and indi_data.age is not None and indi_data.age > 30 and not indi_data.spouse_of:
+            single_list.append(indi_data.spouse_of)
+            print(f"ERROR: INDIVIDUAL: US31: {extract_numeric_part(indi_id)}: Individual age is more than 30 and never married")
+
+    if not single_list:
+        print(f"US31: All individual married before 30")
+        return 'Yes'
+    else:
+        return 'No'
+    
+def check_sibling_marriages(sorted_individuals, sorted_families):
+    siblings = []
+    sibling_marr = []
+
+    for indi_id, indi_data in sorted_individuals.items():
+        if indi_data.child_of:
+            for sibling_id in indi_data.child_of:
+                siblings.append(sibling_id)
+
+    for fam_id, fam_data in sorted_families.items():
+        if fam_data.husband_id in siblings and fam_data.wife_id in siblings:
+            sibling_marr.append(fam_data.husband_id)
+            sibling_marr.append(fam_data.wife_id)
+            print(f"ERROR: FAMILY: US18: {extract_numeric_part(fam_id)}: Married couple are siblings.")
+
+    if not sibling_marr:
+        print("US18: All married couples are not siblings")
+        return 'Yes' 
+    else:
+        return 'No'
 
 def check_sibling_birth_dates(individuals, families):
     sibling_birth_dates = {}
@@ -799,6 +855,7 @@ if __name__ == '__main__':
     individuals_data, families_data, duplicate_individual, duplicate_family = parse_gedcom(gedcom_file_path)
 
     sorted_individuals = dict(sorted(individuals_data.items(), key=lambda x: extract_numeric_part(x[0])))
+
     sorted_families = dict(sorted(families_data.items(), key=lambda x: extract_numeric_part(x[0])))
 
     indi_table = PrettyTable(
@@ -819,16 +876,25 @@ if __name__ == '__main__':
     fam_table = PrettyTable(
         ["Family ID", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children", "Marriage Date",
          "Divorce Date"])
+    
+
     for fam_id, fam_data in sorted_families.items():
         if (fam_data.unique_family_names() != ""):
             fam_errors.append(fam_data.unique_family_names())
         elif fam_data.children_before_marriage() != "":
             fam_errors.append(fam_data.children_before_marriage())
+        elif fam_data.divorceBeforeDeath() != "":
+            fam_errors.append(fam_data.divorceBeforeDeath())
         else:
             children_str = ", ".join(fam_data.childrenIds) if fam_data.childrenIds else 'NA'
             fam_table.add_row(
                 [fam_id, fam_data.husband_id, fam_data.husband_name, fam_data.wife_id, fam_data.wife_name, children_str,
                  fam_data.marriage_date, fam_data.divorce_date])
+        
+        for child_id in fam_data.childrenIds:
+            child = sorted_individuals[child_id]
+            if fam_data.parentsTooOld(child) != "":
+                fam_errors.append(fam_data.parentsTooOld(child))
 
     print("\nFamilies:")
     print(fam_table)
@@ -848,6 +914,8 @@ if __name__ == '__main__':
     check_sibling_birth_dates(sorted_individuals, sorted_families)
     check_marriage_and_divorce_date(sorted_families)
     check_marriage_before_death(sorted_families, sorted_individuals)
+    list_living_single_individuals(sorted_individuals)
+    check_sibling_marriages(sorted_individuals,sorted_families)
 
     fam_errors.sort()
     print()
