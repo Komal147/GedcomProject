@@ -8,7 +8,7 @@ parent_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(parent_dir)
 
 import gedcom_data
-from gedcom_data import DatesBeforeCurrDate,check_marriage_and_divorce_date,check_death_and_age,check_marriage_before_death
+from gedcom_data import DatesBeforeCurrDate,check_marriage_and_divorce_date,check_death_and_age,check_marriage_before_death,list_living_single_individuals,check_sibling_marriages
 import unittest
 
 
@@ -611,5 +611,93 @@ class TestMarriageBeforeDeath(unittest.TestCase):
         self.assertEqual(result, expected_output)
 
 
+class TestLivingSingleIndividual(unittest.TestCase):
+
+    def setUp(self):
+        self.individuals = [
+            gedcom_data.Individual("@I3@", "Jane", "F","1990-07-21", None, "",None, 35, True,True),
+            gedcom_data.Individual("@I7@", "Jessica", "F","1996-08-23", "2019-04-10", "","", 28, False,False),
+            gedcom_data.Individual("@I8@", "Willow", "M","2022-01-01", None, "","@I7@", 239, True,False),
+            gedcom_data.Individual("@I5@", "Jack", "M","1987-02-12", None, "",None, 37, False,True),
+            gedcom_data.Individual("@I6@", "Jeffrey", "M","2017-01-19", "2010-05-01", "","", 157, False,False)
+        ]
+
+    def test_check_married_individual_after_30(self):
+
+        expected_output = 'Yes'
+
+        indi = self.individuals[2]
+        indi_dict = {indi.identifier: indi}
+
+        result = list_living_single_individuals(indi_dict)
+        self.assertEqual(result, expected_output)
+
+    def test_check_not_married_individual_after_30(self):
+
+        expected_output = 'No'
+
+        indi = self.individuals[0]
+        indi_dict = {indi.identifier: indi}
+
+        result = list_living_single_individuals(indi_dict)
+        self.assertEqual(result, expected_output)
+
+    def test_check_not_married_individual_after_30s(self):
+
+        expected_output = 'No'
+
+        indi = self.individuals[3]
+        indi_dict = {indi.identifier: indi}
+
+        result = list_living_single_individuals(indi_dict)
+        self.assertEqual(result, expected_output)
+
+
+class TestSiblingsMarriage(unittest.TestCase):
+
+    def setUp(self):
+        self.individuals = [
+            gedcom_data.Individual("@I3@", "Jane", "F", "1778-07-21", "2018-02-12", "@I7@", "@F5@", 239, False, False),
+            gedcom_data.Individual("@I7@", "Jessica", "F", "1996-08-23", "2019-04-10", ["@I3@","@I8@"], "", 28, False, False),
+            gedcom_data.Individual("@I8@", "Willow", "M", "2022-01-01", None, "@I7@", "@F5@", 239, False, False),
+            gedcom_data.Individual("@I5@", "Jack", "M", "1987-02-12", None, "", "", 37, False, True),
+            gedcom_data.Individual("@I6@", "Jeffrey", "M", "2017-01-19", "2010-05-01", "", "", 157, False, False)
+        ]
+
+        # Modify families to include siblings married to each other
+        self.families = [
+            gedcom_data.Family("@F3@", "@I6@", "Jeffrey", "@I7@", "Erica", [], "2016-11-12", "2015-11-12", []),
+            gedcom_data.Family("@F4@", "@I6@", "Willow", "@I7@", "Jane", ["@I3@", "@I8@"], "2001-12-01", "2010-11-12", []),
+            gedcom_data.Family("@F5@", "@I3@", "Jane", "@I8@", "Willow", [], "2020-01-01", "2019-01-01", [])
+        ]
+
+    def test_check_siblings_married(self):
+
+        expected_output = 'No'  
+
+        indi = self.individuals[1]  
+        indi_dict = {indi.identifier: indi}
+
+        fam = self.families[2]  
+        family_dict = {fam.identifier: fam}
+
+        result = check_sibling_marriages(indi_dict, family_dict)
+        self.assertEqual(result, expected_output)
+
+    def test_check_siblings_not_married(self):
+
+        expected_output = 'Yes'  
+
+        indi = self.individuals[2]  
+        indi_dict = {indi.identifier: indi}
+
+        fam = self.families[0]  
+        family_dict = {fam.identifier: fam}
+
+        result = check_sibling_marriages(indi_dict, family_dict)
+        self.assertEqual(result, expected_output)
+
+
+    
 if __name__ == '__main__':
     unittest.main()

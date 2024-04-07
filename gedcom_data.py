@@ -678,7 +678,43 @@ def check_marriage_before_death(sorted_families, sorted_individuals):
         return 'Yes'
     else:
         return 'No'
+    
 
+def list_living_single_individuals(sorted_individuals):
+
+    single_list = []
+
+    for indi_id, indi_data in sorted_individuals.items():
+        if indi_data.alive and indi_data.age is not None and indi_data.age > 30 and not indi_data.spouse_of:
+            single_list.append(indi_data.spouse_of)
+            print(f"ERROR: INDIVIDUAL: US31: {extract_numeric_part(indi_id)}: Individual age is more than 30 and never married")
+
+    if not single_list:
+        print(f"US31: All individual married before 30")
+        return 'Yes'
+    else:
+        return 'No'
+    
+def check_sibling_marriages(sorted_individuals, sorted_families):
+    siblings = []
+    sibling_marr = []
+
+    for indi_id, indi_data in sorted_individuals.items():
+        if indi_data.child_of:
+            for sibling_id in indi_data.child_of:
+                siblings.append(sibling_id)
+
+    for fam_id, fam_data in sorted_families.items():
+        if fam_data.husband_id in siblings and fam_data.wife_id in siblings:
+            sibling_marr.append(fam_data.husband_id)
+            sibling_marr.append(fam_data.wife_id)
+            print(f"ERROR: FAMILY: US18: {extract_numeric_part(fam_id)}: Married couple are siblings.")
+
+    if not sibling_marr:
+        print("US18: All married couples are not siblings")
+        return 'Yes' 
+    else:
+        return 'No'
 
 
 def check_sibling_birth_dates(individuals, families):
@@ -813,6 +849,8 @@ if __name__ == '__main__':
     check_sibling_birth_dates(sorted_individuals, sorted_families)
     check_marriage_and_divorce_date(sorted_families)
     check_marriage_before_death(sorted_families, sorted_individuals)
+    list_living_single_individuals(sorted_individuals)
+    check_sibling_marriages(sorted_individuals,sorted_families)
 
 
     fam_errors.sort()
