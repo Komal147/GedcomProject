@@ -9,7 +9,7 @@ sys.path.append(parent_dir)
 
 import gedcom_data
 from gedcom_data import DatesBeforeCurrDate, check_marriage_and_divorce_date, check_death_and_age, \
-    check_marriage_before_death
+    check_marriage_before_death, list_living_single_individuals, check_sibling_marriages
 
 import unittest
 
