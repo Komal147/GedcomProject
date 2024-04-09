@@ -380,6 +380,29 @@ class Family:
         self._wife = value
 
 
+    def sameBirthDay(self) :
+        individuals = self.children
+
+        individuals += [self.husband, self.wife]
+
+        for i in range(len(individuals)) :
+            for j in range(i + 1, len(individuals)) :
+                if individuals[i].birth_date == individuals[j].birth_date :
+                    return (f"Individuals {individuals[i].identifier} and {individuals[j].identifier} have the same birth date {individuals[i].birth_date} and are in the same family")
+        
+
+    def correctGenderForParents(self) : 
+        print(self.husband.sex)
+
+        if(self.husband != None and self.husband.sex != "M"):
+            return (f"ERROR: FAMILY: US21: The father of this individual has the wrong gender {self.identifier}: ")
+        elif (self.wife != None and self.wife.sex != "F"):
+            return (f"ERROR: FAMILY: US21: The mother of this individual has the wrong gender {self.identifier}: ")
+        
+        return ""
+
+
+
     def divorceBeforeDeath(self) : 
         if(self.divorce_date != None ) :
             if(self.husband != None and self.husband.death_date != None and self.divorce_date > self.husband.death_date) :
@@ -391,8 +414,14 @@ class Family:
         return ""
 
     def parentsTooOld(self, individual):
+        
+            if individual.birth_date is None:
+                return ""
             
-            if (self.wife != None and self.wife.birth_date - individual.birth_date > 60) or (self.husband != None and self.husband.birth_date - individual.birth_date > 80):
+            wife_birth = int(self.wife.birth_date.split("-")[0])
+            husband_birth = int(self.husband.birth_date.split("-")[0])
+            my_birth = int(individual.birth_date.split("-")[0])
+            if (self.wife != None and wife_birth - my_birth > 60) or (self.husband != None and husband_birth - my_birth > 80):
              return (f"ERROR: FAMILY: US12: {individual.identifier}: "
                         f"One of the parents is too old compared to the child")
             
@@ -591,12 +620,14 @@ def process_gedcom_line(file, line, individuals, families, current_individual, c
         husband = individuals.get(components[2], None)
         if husband is not None:
             current_family.husband_name = husband.name
+            current_family.husband = husband
 
     elif tag == 'WIFE' and is_valid_tag(tag, level):
         current_family.wife_id = components[2]
         wife = individuals.get(components[2], None)
         if wife is not None:
             current_family.wife_name = wife.name
+            current_family.wife = wife
 
     elif tag == 'CHIL' and is_valid_tag(tag, level):
         current_family.children.append(individuals.get(components[2], None))
@@ -871,6 +902,7 @@ if __name__ == '__main__':
     print(indi_table)
 
     fam_errors = []
+    same_births = []
 
     fam_table = PrettyTable(
         ["Family ID", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children", "Marriage Date",
@@ -878,12 +910,18 @@ if __name__ == '__main__':
     
 
     for fam_id, fam_data in sorted_families.items():
+
+        if(fam_data.sameBirthDay() != ""):
+            same_births.append(fam_data.sameBirthDay())
+
         if (fam_data.unique_family_names() != ""):
             fam_errors.append(fam_data.unique_family_names())
         elif fam_data.children_before_marriage() != "":
             fam_errors.append(fam_data.children_before_marriage())
         elif fam_data.divorceBeforeDeath() != "":
             fam_errors.append(fam_data.divorceBeforeDeath())
+        elif fam_data.correctGenderForParents() != "":
+            fam_errors.append(fam_data.correctGenderForParents())
         else:
             children_str = ", ".join(fam_data.childrenIds) if fam_data.childrenIds else 'NA'
             fam_table.add_row(
@@ -920,6 +958,11 @@ if __name__ == '__main__':
     print()
     for err in fam_errors:
         print(err)
+    
+    same_births.sort()
+    print()
+    for bir in same_births:
+        print(bir)
 
     print_missing_required_fields_for_all_individuals(sorted_individuals)
     print_birth_before_death_errors_for_all_individuals(sorted_individuals)
