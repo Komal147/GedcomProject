@@ -380,6 +380,16 @@ class Family:
         self._wife = value
 
 
+    def sameBirthDay(self) :
+        individuals = self.children
+
+        individuals += [self.husband, self.wife]
+
+        for i in range(len(individuals)) :
+            for j in range(i + 1, len(individuals)) :
+                if individuals[i].birth_date == individuals[j].birth_date :
+                    return (f"Individuals {individuals[i].identifier} and {individuals[j].identifier} have the same birth date {individuals[i].birth_date} and are in the same family")
+        
 
     def correctGenderForParents(self) : 
         print(self.husband.sex)
@@ -892,6 +902,7 @@ if __name__ == '__main__':
     print(indi_table)
 
     fam_errors = []
+    same_births = []
 
     fam_table = PrettyTable(
         ["Family ID", "Husband ID", "Husband Name", "Wife ID", "Wife Name", "Children", "Marriage Date",
@@ -899,6 +910,10 @@ if __name__ == '__main__':
     
 
     for fam_id, fam_data in sorted_families.items():
+
+        if(fam_data.sameBirthDay() != ""):
+            same_births.append(fam_data.sameBirthDay())
+
         if (fam_data.unique_family_names() != ""):
             fam_errors.append(fam_data.unique_family_names())
         elif fam_data.children_before_marriage() != "":
@@ -943,6 +958,11 @@ if __name__ == '__main__':
     print()
     for err in fam_errors:
         print(err)
+    
+    same_births.sort()
+    print()
+    for bir in same_births:
+        print(bir)
 
     print_missing_required_fields_for_all_individuals(sorted_individuals)
     print_birth_before_death_errors_for_all_individuals(sorted_individuals)
