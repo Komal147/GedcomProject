@@ -380,6 +380,19 @@ class Family:
         self._wife = value
 
 
+
+    def correctGenderForParents(self) : 
+        print(self.husband.sex)
+
+        if(self.husband != None and self.husband.sex != "M"):
+            return (f"ERROR: FAMILY: US21: The father of this individual has the wrong gender {self.identifier}: ")
+        elif (self.wife != None and self.wife.sex != "F"):
+            return (f"ERROR: FAMILY: US21: The mother of this individual has the wrong gender {self.identifier}: ")
+        
+        return ""
+
+
+
     def divorceBeforeDeath(self) : 
         if(self.divorce_date != None ) :
             if(self.husband != None and self.husband.death_date != None and self.divorce_date > self.husband.death_date) :
@@ -391,8 +404,14 @@ class Family:
         return ""
 
     def parentsTooOld(self, individual):
+        
+            if individual.birth_date is None:
+                return ""
             
-            if (self.wife != None and self.wife.birth_date - individual.birth_date > 60) or (self.husband != None and self.husband.birth_date - individual.birth_date > 80):
+            wife_birth = int(self.wife.birth_date.split("-")[0])
+            husband_birth = int(self.husband.birth_date.split("-")[0])
+            my_birth = int(individual.birth_date.split("-")[0])
+            if (self.wife != None and wife_birth - my_birth > 60) or (self.husband != None and husband_birth - my_birth > 80):
              return (f"ERROR: FAMILY: US12: {individual.identifier}: "
                         f"One of the parents is too old compared to the child")
             
@@ -591,12 +610,14 @@ def process_gedcom_line(file, line, individuals, families, current_individual, c
         husband = individuals.get(components[2], None)
         if husband is not None:
             current_family.husband_name = husband.name
+            current_family.husband = husband
 
     elif tag == 'WIFE' and is_valid_tag(tag, level):
         current_family.wife_id = components[2]
         wife = individuals.get(components[2], None)
         if wife is not None:
             current_family.wife_name = wife.name
+            current_family.wife = wife
 
     elif tag == 'CHIL' and is_valid_tag(tag, level):
         current_family.children.append(individuals.get(components[2], None))
@@ -884,6 +905,8 @@ if __name__ == '__main__':
             fam_errors.append(fam_data.children_before_marriage())
         elif fam_data.divorceBeforeDeath() != "":
             fam_errors.append(fam_data.divorceBeforeDeath())
+        elif fam_data.correctGenderForParents() != "":
+            fam_errors.append(fam_data.correctGenderForParents())
         else:
             children_str = ", ".join(fam_data.childrenIds) if fam_data.childrenIds else 'NA'
             fam_table.add_row(
